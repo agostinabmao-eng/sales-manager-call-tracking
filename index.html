@@ -3,1245 +3,382 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Vive DME — Sales Manager OS</title>
+<title>Vive Health — Call Tracker</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&family=Barlow:wght@300;400;500;600;700&family=Barlow+Condensed:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
-:root {
-  --green: #0E8A8A;
-  --green-bright: #0C7575;
-  --green-dim: #0A5F5F;
-  --green-muted: #E6F5F5;
-  --green-glow: rgba(14,138,138,0.08);
-  --green-glow-soft: rgba(14,138,138,0.05);
-  --black: #FFFFFF;
-  --surface: #FFFFFF;
-  --surface-2: #F4F8F8;
-  --surface-3: #EEEEEE;
-  --surface-4: #E5E5E5;
-  --border: rgba(14,138,138,0.2);
-  --border-soft: rgba(0,0,0,0.08);
-  --text: #111111;
-  --text-muted: #444444;
-  --text-dim: #888888;
-  --red: #CC2222;
-  --red-bg: rgba(204,34,34,0.07);
-  --amber: #B86800;
-  --amber-bg: rgba(184,104,0,0.07);
-  --blue: #1A5FA8;
-  --blue-bg: rgba(26,95,168,0.07);
+/* ── TEAM THEMES ─────────────────────────────────────────── */
+body.theme-ortho {
+  --accent: #178040;
+  --accent-bright: #1A9648;
+  --accent-dim: #0F5228;
+  --accent-glow: rgba(23,128,64,0.08);
+  --accent-border: rgba(23,128,64,0.2);
+  --badge-bg: rgba(23,128,64,0.08);
+  --submitted-bg: #EAF5EE;
+  --total-row-bg: #EEF8F3;
+  --mgr-row-bg: #F4F9F4;
+  --check-hover: #EEF8F2;
+  --check-done: #E8F5EE;
 }
+body.theme-dme {
+  --accent: #0E8A8A;
+  --accent-bright: #0C7575;
+  --accent-dim: #0A5F5F;
+  --accent-glow: rgba(14,138,138,0.08);
+  --accent-border: rgba(14,138,138,0.2);
+  --badge-bg: rgba(14,138,138,0.08);
+  --submitted-bg: #E6F5F5;
+  --total-row-bg: #E6F5F5;
+  --mgr-row-bg: #F4F9F9;
+  --check-hover: #EEF8F8;
+  --check-done: #E6F5F5;
+}
+
 * { box-sizing: border-box; margin: 0; padding: 0; }
-body {
-  font-family: 'Barlow', sans-serif;
-  background: #FFFFFF;
-  color: var(--text);
-  min-height: 100vh;
-  font-size: 14px;
-}
+body { font-family: 'Barlow', sans-serif; background: #FFFFFF; color: #111111; min-height: 100vh; font-size: 14px; }
 
-/* SCANLINE TEXTURE */
-
-
-/* NAV */
+/* ── NAV ─────────────────────────────────────────────────── */
 .nav {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 0 1.5rem;
-  height: 52px;
-  border-bottom: 1px solid var(--border);
-  position: sticky;
-  top: 0;
-  background: rgba(255,255,255,0.97); border-bottom: 2px solid var(--green);
-  backdrop-filter: blur(12px);
-  z-index: 100;
+  display: flex; flex-direction: column;
+  border-bottom: 2px solid var(--accent);
+  position: sticky; top: 0;
+  background: rgba(255,255,255,0.97);
+  backdrop-filter: blur(12px); z-index: 100;
 }
-.nav-brand {
-  display: flex;
-  align-items: center;
-  gap: 12px;
+.nav-row1 {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 0 1.5rem; height: 48px;
+  border-bottom: 1px solid rgba(0,0,0,0.06);
 }
+.nav-row2 {
+  display: flex; align-items: center; gap: 6px;
+  padding: 0 1.5rem; height: 38px;
+}
+.nav-brand { display: flex; align-items: center; gap: 12px; }
 .nav-logo {
-  font-family: 'Barlow Condensed', sans-serif;
-  font-size: 18px;
-  font-weight: 700;
-  color: #FFFFFF;
-  letter-spacing: .1em;
-  text-transform: uppercase;
-  border: 1px solid var(--green); background: var(--green);
-  padding: 3px 10px;
-  position: relative;
+  font-family: 'Barlow Condensed', sans-serif; font-size: 18px; font-weight: 700;
+  color: #FFFFFF; letter-spacing: .1em; text-transform: uppercase;
+  border: 1px solid var(--accent); padding: 3px 10px; background: var(--accent);
+  transition: background .2s, border-color .2s;
 }
+.nav-subtitle { font-family: 'Space Mono', monospace; font-size: 10px; color: #333; letter-spacing: .08em; text-transform: uppercase; }
 
-.nav-subtitle {
-  font-family: 'Space Mono', monospace;
-  font-size: 10px;
-  color: #333333;
-  letter-spacing: .08em;
-  text-transform: uppercase;
+/* TEAM SELECTOR */
+.team-selector {
+  display: flex; align-items: center; gap: 6px;
+  background: #F5F5F5; border: 1px solid #DDD; border-radius: 4px;
+  padding: 2px;
 }
-.nav-tabs {
-  display: flex;
-  gap: 2px;
+.team-btn {
+  padding: 5px 14px; border: none; border-radius: 3px; cursor: pointer;
+  font-family: 'Barlow Condensed', sans-serif; font-size: 12px; font-weight: 700;
+  letter-spacing: .07em; text-transform: uppercase; transition: all .15s;
+  background: transparent; color: #888;
 }
+.team-btn.active { background: var(--accent); color: #fff; }
+
+.nav-tabs { display: flex; gap: 2px; }
 .nav-tab {
-  padding: 6px 14px;
-  font-size: 11px;
-  font-weight: 600;
-  color: #555555;
-  cursor: pointer;
-  border-radius: 2px;
-  transition: all .15s;
-  font-family: 'Barlow Condensed', sans-serif;
-  letter-spacing: .08em;
-  text-transform: uppercase;
-  border: none;
-  background: transparent;
+  padding: 6px 14px; font-size: 11px; font-weight: 600; color: #555;
+  cursor: pointer; border-radius: 2px; transition: all .15s;
+  font-family: 'Barlow Condensed', sans-serif; letter-spacing: .08em;
+  text-transform: uppercase; border: none; background: transparent;
 }
-.nav-tab:hover { color: var(--green); background: var(--green-glow); }
-.nav-tab.active { color: var(--green); background: var(--green-glow); border-bottom: 2px solid var(--green); font-weight: 700; }
-.nav-right {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
-.date-nav {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-.date-btn {
-  width: 26px; height: 26px;
-  background: #EEEEEE;
-  border: 1px solid #CCCCCC;
-  color: var(--green);
-  cursor: pointer;
-  font-size: 14px;
-  display: flex; align-items: center; justify-content: center;
-  border-radius: 2px;
-  transition: all .15s;
-}
-.date-btn:hover { background: var(--green-glow); }
-.date-display {
-  font-family: 'Space Mono', monospace;
-  font-size: 11px;
-  color: #111111;
-  min-width: 100px;
-  text-align: center;
-}
-.btn-submit {
-  padding: 7px 18px;
-  background: var(--green);
-  color: var(--black);
-  border: none;
-  cursor: pointer;
-  font-family: 'Barlow Condensed', sans-serif;
-  font-size: 12px;
-  font-weight: 700;
-  letter-spacing: .1em;
-  text-transform: uppercase;
-  border-radius: 2px;
-  transition: all .15s;
-}
-.btn-submit:hover { background: var(--green-bright); }
-.btn-submit.submitted { background: var(--green-dim); color: rgba(255,255,255,0.5); cursor: default; }
+.nav-tab:hover { color: var(--accent); background: var(--accent-glow); }
+.nav-tab.active { color: var(--accent); background: var(--accent-glow); border-bottom: 2px solid var(--accent); font-weight: 700; }
 
-/* MAIN */
-.main { padding: 1.5rem; max-width: 1100px; margin: 0 auto; }
+.nav-right { display: flex; align-items: center; gap: 8px; }
+.date-nav { display: flex; align-items: center; gap: 8px; }
+.date-btn { width: 26px; height: 26px; background: #EEE; border: 1px solid #CCC; color: var(--accent); cursor: pointer; font-size: 14px; display: flex; align-items: center; justify-content: center; border-radius: 2px; transition: all .15s; }
+.date-btn:hover { background: var(--accent-glow); }
+.date-display { font-family: 'Space Mono', monospace; font-size: 11px; color: #111; min-width: 130px; text-align: center; }
+
+/* ── MAIN ────────────────────────────────────────────────── */
+.main { padding: 1.5rem; max-width: 1000px; margin: 0 auto; padding-top: 1.5rem; }
 .tab-content { display: none; }
 .tab-content.active { display: block; }
 
-/* SECTION HEADER */
-.section-header {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  margin-bottom: 1rem;
-  padding-bottom: 8px;
-  border-bottom: 1px solid #E0E0E0;
-}
-.section-tag {
-  font-family: 'Space Mono', monospace;
-  font-size: 9px;
-  color: #FFFFFF;
-  background: var(--green);
-  border: 1px solid var(--green);
-  padding: 2px 8px;
-  letter-spacing: .1em;
-  text-transform: uppercase;
-}
-.section-title {
-  font-family: 'Barlow Condensed', sans-serif;
-  font-size: 16px;
-  font-weight: 700;
-  color: #FFFFFF;
-  letter-spacing: .05em;
-  text-transform: uppercase;
-}
-.section-desc {
-  font-size: 11px;
-  color: var(--text-muted);
-  margin-left: auto;
-}
+/* ── CARDS ───────────────────────────────────────────────── */
+.card { background: #FFF; border: 1px solid #E0E0E0; border-radius: 4px; padding: 1.25rem; margin-bottom: 1rem; }
+.card.accent { border-left: 3px solid var(--accent); }
+.card.accent-amber { border-left: 3px solid #B86800; }
+.card-title { font-family: 'Barlow Condensed', sans-serif; font-size: 13px; font-weight: 600; color: var(--accent); letter-spacing: .08em; text-transform: uppercase; margin-bottom: 1rem; display: flex; align-items: center; gap: 8px; }
+.badge { font-family: 'Space Mono', monospace; font-size: 9px; background: var(--badge-bg); border: 1px solid var(--accent-border); padding: 1px 6px; color: #666; }
 
-/* CARDS */
-.card {
-  background: #FFFFFF;
-  border: 1px solid #E0E0E0;
-  border-radius: 4px;
-  padding: 1.25rem;
-  margin-bottom: 1rem;
-}
-.card.accent { border-left: 3px solid var(--green); }
-.card.accent-amber { border-left: 3px solid var(--amber); }
-.card.accent-red { border-left: 3px solid var(--red); }
-.card-title {
-  font-family: 'Barlow Condensed', sans-serif;
-  font-size: 13px;
-  font-weight: 600;
-  color: var(--green);
-  letter-spacing: .08em;
-  text-transform: uppercase;
-  margin-bottom: 1rem;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-.card-title .badge {
-  font-family: 'Space Mono', monospace;
-  font-size: 9px;
-  background: var(--green-glow);
-  border: 1px solid var(--border);
-  padding: 1px 6px;
-  color: var(--text-muted);
-}
+/* ── WEEK / MONTH NAV ────────────────────────────────────── */
+.week-nav, .month-nav { display: flex; align-items: center; gap: 10px; margin-bottom: 1rem; }
+.week-btn, .month-btn { padding: 5px 12px; background: #F0F0F0; border: 1px solid #CCC; color: #444; cursor: pointer; font-family: 'Barlow Condensed', sans-serif; font-size: 12px; letter-spacing: .06em; border-radius: 2px; }
+.week-btn:hover, .month-btn:hover { border-color: var(--accent); color: var(--accent); }
+.week-label, .month-label-display { font-family: 'Space Mono', monospace; font-size: 11px; color: #111; flex: 1; text-align: center; }
 
-/* CHECKLIST */
-.check-list { display: flex; flex-direction: column; gap: 6px; }
-.check-item {
-  display: flex;
-  align-items: flex-start;
-  gap: 10px;
-  padding: 8px 10px;
-  border-radius: 3px;
-  cursor: pointer;
-  transition: background .1s;
-  border: 1px solid transparent;
-}
-.check-item:hover { background: #EEF8F8; }
-.check-item.checked { background: #E6F5F5; border-color: rgba(14,138,138,0.15); }
-.check-item input[type="checkbox"] { display: none; }
-.check-box {
-  width: 16px; height: 16px;
-  border: 1px solid #BBBBBB;
-  border-radius: 2px;
-  flex-shrink: 0;
-  margin-top: 1px;
-  display: flex; align-items: center; justify-content: center;
-  transition: all .15s;
-}
-.check-item.checked .check-box {
-  background: var(--green);
-  border-color: var(--green);
-}
-.check-item.checked .check-box::after {
-  content: '✓';
-  font-size: 10px;
-  color: var(--black);
-  font-weight: 700;
-}
-.check-label {
-  font-size: 13px;
-  color: #222222;
-  line-height: 1.4;
-  flex: 1;
-}
-.check-item.checked .check-label {
-  color: var(--text);
-  text-decoration: line-through;
-  text-decoration-color: #AAAAAA;
-}
-.check-sub {
-  font-size: 11px;
-  color: var(--text-dim);
-  margin-top: 2px;
-}
+/* ── INPUTS ──────────────────────────────────────────────── */
+.call-input { width: 65px; background: #F5F5F5; border: 1px solid #DDD; border-radius: 2px; padding: 5px 8px; color: #111; font-family: 'Space Mono', monospace; font-size: 12px; text-align: center; }
+.call-input:focus { outline: none; border-color: var(--accent); }
+.num-input { width: 80px; background: #F2F2F2; border: 1px solid #CCC; border-radius: 2px; padding: 5px 8px; color: #111; font-family: 'Space Mono', monospace; font-size: 14px; text-align: center; }
+.num-input:focus { outline: none; border-color: var(--accent); }
+.rep-name-input { background: transparent; border: none; border-bottom: 1px dashed #CCC; color: var(--accent); font-family: 'Barlow Condensed', sans-serif; font-size: 13px; font-weight: 600; text-transform: uppercase; letter-spacing: .06em; width: 130px; padding: 0 0 2px 0; }
+.rep-name-input:focus { outline: none; border-bottom-color: var(--accent); }
+.note-area { width: 100%; background: #F8F8F8; border: 1px solid #DDD; border-radius: 3px; padding: 10px; color: #111; font-family: 'Barlow', sans-serif; font-size: 13px; resize: vertical; min-height: 60px; margin-top: 6px; }
+.note-area:focus { outline: none; border-color: var(--accent); }
+.note-label { font-family: 'Space Mono', monospace; font-size: 9px; color: #666; letter-spacing: .08em; text-transform: uppercase; margin-top: 12px; display: block; }
 
-/* GRID */
-.grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; }
-.grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1rem; }
-
-/* PIPELINE METRICS */
-.metric-row {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 10px;
-  margin-bottom: 1rem;
-}
-.metric-box {
-  background: #F4F9F9;
-  border: 1px solid #E0E0E0;
-  border-radius: 3px;
-  padding: 12px;
-  text-align: center;
-}
-.metric-box.warn { border-color: rgba(255,176,32,0.25); background: rgba(255,176,32,0.04); }
-.metric-box.danger { border-color: rgba(255,77,77,0.25); background: rgba(255,77,77,0.04); }
-.metric-box.good { border-color: rgba(46,204,113,0.25); background: rgba(46,204,113,0.04); }
-.metric-label {
-  color: #FFFFFF;
-  font-family: 'Space Mono', monospace;
-  font-size: 9px;
-  color: var(--text-muted);
-  letter-spacing: .08em;
-  text-transform: uppercase;
-  margin-bottom: 6px;
-}
-.metric-val {
-  font-family: 'Barlow Condensed', sans-serif;
-  font-size: 26px;
-  font-weight: 700;
-  color: var(--text);
-  line-height: 1;
-}
-.metric-val.good { color: var(--green); }
-.metric-val.warn { color: var(--amber); }
-.metric-val.danger { color: var(--red); }
-.metric-target {
-  font-size: 10px;
-  color: #AABBBB;
-  margin-top: 3px;
-}
-
-/* NUMBER INPUT */
-.num-input {
-  width: 80px;
-  background: #F2F2F2;
-  border: 1px solid #CCCCCC;
-  border-radius: 2px;
-  padding: 4px 8px;
-  color: #111111;
-  font-family: 'Space Mono', monospace;
-  font-size: 13px;
-  text-align: center;
-  margin-top: 6px;
-}
-.num-input:focus { outline: none; border-color: var(--green); }
-
-/* TEXT AREA */
-.note-area {
-  width: 100%;
-  background: #F8F8F8;
-  border: 1px solid #DDDDDD;
-  border-radius: 3px;
-  padding: 10px;
-  color: #111111;
-  font-family: 'Barlow', sans-serif;
-  font-size: 13px;
-  resize: vertical;
-  min-height: 70px;
-  margin-top: 8px;
-  transition: border-color .15s;
-}
-.note-area:focus { outline: none; border-color: var(--green); }
-.note-label {
-  font-family: 'Space Mono', monospace;
-  font-size: 9px;
-  color: #666666;
-  letter-spacing: .08em;
-  text-transform: uppercase;
-  margin-top: 12px;
-  display: block;
-}
-
-/* REP CARDS */
-.rep-grid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 10px;
-  margin-bottom: 1rem;
-}
-.rep-card {
-  background: #F4F9F9;
-  border: 1px solid #E0E0E0;
-  border-radius: 3px;
-  padding: 12px;
-}
-.rep-name {
-  font-family: 'Barlow Condensed', sans-serif;
-  font-size: 13px;
-  font-weight: 600;
-  color: var(--green);
-  text-transform: uppercase;
-  letter-spacing: .06em;
-  margin-bottom: 8px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-}
-.rep-name-input {
-  background: transparent;
-  border: none;
-  border-bottom: 1px dashed var(--text-dim);
-  color: var(--green);
-  font-family: 'Barlow Condensed', sans-serif;
-  font-size: 13px;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: .06em;
-  width: 100%;
-  padding: 0 0 2px 0;
-  background: transparent;
-}
-.rep-name-input:focus { outline: none; border-bottom-color: var(--green); }
-.rep-field { margin-bottom: 8px; }
-.rep-field-label {
-  font-size: 10px;
-  color: #AABBB5;
-  margin-bottom: 3px;
-  font-family: 'Space Mono', monospace;
-  letter-spacing: .04em;
-}
-.rep-input {
-  width: 100%;
-  background: #FFFFFF;
-  border: 1px solid #DDDDDD;
-  border-radius: 2px;
-  padding: 5px 8px;
-  color: var(--text);
-  font-size: 12px;
-  transition: border-color .15s;
-}
-.rep-input:focus { outline: none; border-color: var(--green); background: var(--surface-4); }
-
-/* PROGRESS BAR */
-.prog-wrap { margin-bottom: 1.5rem; }
-.prog-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 6px;
-}
-.prog-label {
-  font-family: 'Space Mono', monospace;
-  font-size: 10px;
-  color: #444444;
-  letter-spacing: .06em;
-  text-transform: uppercase;
-}
-.prog-pct {
-  font-family: 'Space Mono', monospace;
-  font-size: 11px;
-  color: var(--green);
-}
-.prog-bar {
-  height: 4px;
-  background: #E0E0E0;
-  border-radius: 2px;
-  overflow: hidden;
-}
-.prog-fill {
-  height: 100%;
-  background: linear-gradient(90deg, var(--green-dim), var(--green));
-  border-radius: 2px;
-  transition: width .4s ease;
-}
-
-/* DIVIDER */
-.divider { border: none; border-top: 1px solid #E0E0E0; margin: 1.2rem 0; }
-
-/* PIPELINE INPUT TABLE */
-.pipeline-table {
-  width: 100%;
-  border-collapse: collapse;
-  font-size: 12px;
-}
-.pipeline-table th {
-  font-family: 'Space Mono', monospace;
-  font-size: 9px;
-  color: var(--text-muted);
-  letter-spacing: .07em;
-  text-transform: uppercase;
-  padding: 6px 10px;
-  text-align: left;
-  border-bottom: 1px solid var(--border-soft);
-}
-.pipeline-table td {
-  padding: 6px 10px;
-  border-bottom: 1px solid rgba(255,255,255,0.03);
-  vertical-align: middle;
-}
-.pipeline-table tr:hover td { background: #F5F5F5; }
-.tbl-input {
-  width: 70px;
-  background: #F5F5F5;
-  border: 1px solid #DDDDDD;
-  border-radius: 2px;
-  padding: 4px 6px;
-  color: #111111;
-  font-family: 'Space Mono', monospace;
-  font-size: 11px;
-  text-align: center;
-}
-.tbl-input:focus { outline: none; border-color: var(--green); }
-.status-dot {
-  width: 8px; height: 8px;
-  border-radius: 50%;
-  display: inline-block;
-  margin-right: 6px;
-}
-.status-dot.green { background: var(--green); }
-.status-dot.amber { background: var(--amber); }
-.status-dot.red { background: var(--red); }
-
-/* DAILY SCORE PANEL */
-.score-panel {
-  display: grid;
-  grid-template-columns: 1fr 200px;
-  gap: 1rem;
-  margin-bottom: 1.5rem;
-}
-.score-big {
-  background: #FFFFFF;
-  border: 2px solid var(--green);
-  border-radius: 4px;
-  padding: 1.25rem;
-  text-align: center;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-}
-.score-num {
-  font-family: 'Barlow Condensed', sans-serif;
-  font-size: 64px;
-  font-weight: 700;
-  line-height: 1;
-  color: var(--green);
-}
-.score-num.mid { color: var(--amber); }
-.score-num.low { color: var(--red); }
-.score-sub {
-  font-family: 'Space Mono', monospace;
-  font-size: 10px;
-  color: var(--text-muted);
-  letter-spacing: .06em;
-  text-transform: uppercase;
-  margin-top: 6px;
-}
-.score-items { display: flex; flex-direction: column; gap: 8px; }
-.score-item {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 8px 12px;
-  background: var(--surface);
-  border: 1px solid var(--border-soft);
-  border-radius: 3px;
-  font-size: 12px;
-}
-.score-item-label { color: var(--text-muted); }
-.score-item-val {
-  font-family: 'Space Mono', monospace;
-  font-size: 11px;
-  color: var(--green);
-}
-
-/* MONTH GRID */
-.month-grid {
-  display: grid;
-  grid-template-columns: repeat(7, 1fr);
-  gap: 4px;
-  margin-bottom: 1rem;
-}
-.month-day-header {
-  text-align: center;
-  font-family: 'Space Mono', monospace;
-  font-size: 9px;
-  color: var(--text-dim);
-  padding: 4px 0;
-  letter-spacing: .05em;
-}
-.month-day {
-  aspect-ratio: 1;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  border-radius: 3px;
-  background: #F5F5F5;
-  border: 1px solid #E0E0E0;
-  font-size: 10px;
-  cursor: pointer;
-  transition: all .15s;
-  position: relative;
-}
-.month-day.empty { background: transparent; border-color: transparent; cursor: default; }
-.month-day.today { border-color: var(--green); }
-.month-day.submitted { background: #D3EFEF; border-color: #0E8A8A; }
-.month-day.partial { background: rgba(255,176,32,0.08); border-color: rgba(255,176,32,0.2); }
-.month-day.future { opacity: 0.3; cursor: default; }
-.day-num {
-  font-family: 'Space Mono', monospace;
-  font-size: 10px;
-  color: var(--text-muted);
-}
-.day-pip {
-  width: 4px; height: 4px;
-  border-radius: 50%;
-  margin-top: 2px;
-}
-
-/* WEEKLY VIEW */
-.week-nav {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  margin-bottom: 1rem;
-}
-.week-btn {
-  padding: 5px 12px;
-  background: #F0F0F0;
-  border: 1px solid #CCCCCC;
-  color: #444444;
-  cursor: pointer;
-  font-family: 'Barlow Condensed', sans-serif;
-  font-size: 12px;
-  letter-spacing: .06em;
-  border-radius: 2px;
-}
-.week-btn:hover { border-color: var(--green); color: var(--green); }
-.week-label {
-  font-family: 'Space Mono', monospace;
-  font-size: 11px;
-  color: #111111;
-  flex: 1;
-  text-align: center;
-}
-.week-day-tabs {
-  display: flex;
-  gap: 4px;
-  margin-bottom: 1rem;
-}
-.week-day-tab {
-  flex: 1;
-  padding: 8px 4px;
-  background: #F5F5F5;
-  border: 1px solid #E0E0E0;
-  text-align: center;
-  cursor: pointer;
-  border-radius: 3px;
-  transition: all .15s;
-}
-.week-day-tab:hover { border-color: var(--green); }
-.week-day-tab.active { background: var(--green-glow); border-color: var(--green); }
-.week-day-tab.submitted { background: #D3EFEF; border-color: #0E8A8A; }
-.week-day-name {
-  font-family: 'Barlow Condensed', sans-serif;
-  font-size: 12px;
-  font-weight: 600;
-  color: var(--text-muted);
-  text-transform: uppercase;
-  letter-spacing: .06em;
-}
-.week-day-tab.active .week-day-name,
-.week-day-tab.submitted .week-day-name { color: var(--text); }
-.week-day-pct {
-  font-family: 'Space Mono', monospace;
-  font-size: 10px;
-  color: var(--text-dim);
-  margin-top: 2px;
-}
-
-/* CALL REVIEW TABLE */
-.call-table {
-  width: 100%;
-  border-collapse: collapse;
-}
-.call-table th {
-  font-family: 'Space Mono', monospace;
-  font-size: 9px;
-  color: var(--text-muted);
-  letter-spacing: .07em;
-  text-transform: uppercase;
-  padding: 8px 10px;
-  text-align: left;
-  border-bottom: 1px solid var(--border-soft);
-}
-.call-table td {
-  padding: 8px 10px;
-  border-bottom: 1px solid rgba(255,255,255,0.03);
-  font-size: 12px;
-}
+/* ── TABLES ──────────────────────────────────────────────── */
+.call-table { width: 100%; border-collapse: collapse; }
+.call-table th { font-family: 'Space Mono', monospace; font-size: 9px; color: #666; letter-spacing: .07em; text-transform: uppercase; padding: 8px 10px; text-align: left; border-bottom: 1px solid #E0E0E0; }
+.call-table td { padding: 8px 10px; border-bottom: 1px solid rgba(0,0,0,0.04); font-size: 12px; vertical-align: middle; }
 .call-table tr:hover td { background: #F5F5F5; }
-.call-input {
-  width: 60px;
-  background: #F5F5F5;
-  border: 1px solid #DDDDDD;
-  border-radius: 2px;
-  padding: 4px 6px;
-  color: #111111;
-  font-family: 'Space Mono', monospace;
-  font-size: 11px;
-  text-align: center;
-}
-.call-input:focus { outline: none; border-color: var(--green); }
-.gap-badge {
-  display: inline-block;
-  padding: 2px 8px;
-  border-radius: 2px;
-  font-family: 'Space Mono', monospace;
-  font-size: 10px;
-  font-weight: 700;
-}
-.gap-badge.on-track { background: var(--green-glow); color: var(--green); border: 1px solid var(--border); }
-.gap-badge.behind { background: var(--amber-bg); color: var(--amber); border: 1px solid rgba(255,176,32,0.2); }
-.gap-badge.critical { background: var(--red-bg); color: var(--red); border: 1px solid rgba(255,77,77,0.2); }
+.divider-row td { padding: 5px 10px; background: #F0F0F0; font-family: 'Space Mono', monospace; font-size: 9px; color: #888; letter-spacing: .08em; text-transform: uppercase; }
+.mgr-row { background: var(--mgr-row-bg); }
+.total-row { background: var(--total-row-bg); border-top: 2px solid var(--accent); }
+.total-row td { font-weight: 700; }
 
-/* SALES TAB */
-.goal-card {
-  background: #FFFFFF;
-  border: 1px solid #E0E0E0;
-  border-radius: 4px;
-  padding: 1.25rem;
-  margin-bottom: 1rem;
-}
-.goal-row {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 8px 0;
-  border-bottom: 1px solid rgba(255,255,255,0.04);
-}
-.goal-row:last-child { border-bottom: none; }
-.goal-name {
-  width: 120px;
-  font-size: 12px;
-  color: #FFFFFF;
-  font-family: 'Barlow Condensed', sans-serif;
-  text-transform: uppercase;
-  letter-spacing: .06em;
-}
-.goal-input {
-  width: 110px;
-  background: #F5F5F5;
-  border: 1px solid #DDDDDD;
-  border-radius: 2px;
-  padding: 5px 8px;
-  color: var(--text);
-  font-family: 'Space Mono', monospace;
-  font-size: 12px;
-  text-align: right;
-}
-.goal-input:focus { outline: none; border-color: var(--green); }
-.goal-calc {
-  flex: 1;
-  text-align: right;
-  font-family: 'Space Mono', monospace;
-  font-size: 11px;
-  color: var(--text-muted);
-}
-.pace-bar-wrap { margin-top: 6px; }
-.pace-bar {
-  height: 6px;
-  background: #EEEEEE;
-  border-radius: 3px;
-  overflow: hidden;
-  margin-top: 3px;
-}
-.pace-fill {
-  height: 100%;
-  background: linear-gradient(90deg, var(--green-dim), var(--green));
-  border-radius: 3px;
-  transition: width .4s;
-}
-.pace-fill.warn { background: linear-gradient(90deg, #8A5800, var(--amber)); }
-.pace-fill.danger { background: linear-gradient(90deg, #7A1C1C, var(--red)); }
+/* ── BADGES ──────────────────────────────────────────────── */
+.gap-badge { display: inline-block; padding: 2px 8px; border-radius: 2px; font-family: 'Space Mono', monospace; font-size: 10px; font-weight: 700; }
+.gap-badge.on-track { background: var(--badge-bg); color: var(--accent); border: 1px solid var(--accent-border); }
+.gap-badge.behind { background: rgba(184,104,0,0.08); color: #B86800; border: 1px solid rgba(184,104,0,0.2); }
+.gap-badge.critical { background: rgba(204,34,34,0.08); color: #CC2222; border: 1px solid rgba(204,34,34,0.2); }
 
-/* SECTION SPACER */
-.spacer { height: 1rem; }
-.spacer-lg { height: 1.5rem; }
+/* ── MANAGER DAILY ───────────────────────────────────────── */
+.day-type-row { display: flex; align-items: center; gap: 10px; margin-bottom: 1rem; flex-wrap: wrap; }
+.day-type-label { font-family: 'Barlow Condensed', sans-serif; font-size: 12px; font-weight: 600; text-transform: uppercase; letter-spacing: .06em; color: #666; }
+.day-type-btn { padding: 5px 16px; font-family: 'Barlow Condensed', sans-serif; font-size: 12px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; border-radius: 2px; cursor: pointer; transition: all .15s; }
+.day-note { font-size: 11px; color: #888; font-style: italic; }
+.mgr-calls-row { display: flex; align-items: center; gap: 14px; }
+.mgr-calls-label { font-size: 13px; color: #666; }
 
-/* SUBMITTED OVERLAY */
-.submitted-banner {
-  display: none;
-  padding: 8px 14px;
-  background: #EAF5EE;
-  border: 1px solid var(--green);
-  border-radius: 3px;
-  margin-bottom: 1rem;
-  font-family: 'Space Mono', monospace;
-  font-size: 11px;
-  color: var(--green);
-  letter-spacing: .06em;
-}
+/* ── PROGRESS ────────────────────────────────────────────── */
+.prog-wrap { margin-bottom: 1.25rem; }
+.prog-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; }
+.prog-label { font-family: 'Space Mono', monospace; font-size: 10px; color: #444; letter-spacing: .06em; text-transform: uppercase; }
+.prog-pct { font-family: 'Space Mono', monospace; font-size: 11px; color: var(--accent); }
+.prog-bar { height: 5px; background: #E0E0E0; border-radius: 2px; overflow: hidden; }
+.prog-fill { height: 100%; background: linear-gradient(90deg, var(--accent-dim), var(--accent)); border-radius: 2px; transition: width .4s ease; }
+
+/* ── SUBMIT BUTTONS ──────────────────────────────────────── */
+.submitted-banner { display: none; padding: 8px 14px; background: var(--submitted-bg); border: 1px solid var(--accent); border-radius: 3px; margin-bottom: 1rem; font-family: 'Space Mono', monospace; font-size: 11px; color: var(--accent); letter-spacing: .06em; }
 .submitted-banner.show { display: block; }
+.btn-submit { padding: 7px 18px; background: var(--accent); color: #fff; border: none; cursor: pointer; font-family: 'Barlow Condensed', sans-serif; font-size: 12px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; border-radius: 2px; transition: all .15s; }
+.btn-submit:hover { background: var(--accent-bright); }
+.btn-submit.submitted { background: var(--accent-dim); color: rgba(255,255,255,0.6); cursor: default; }
+.btn-unsubmit { padding: 7px 14px; background: transparent; color: var(--accent); border: 1px solid var(--accent); cursor: pointer; font-family: 'Barlow Condensed', sans-serif; font-size: 12px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; border-radius: 2px; transition: all .15s; display: none; }
+.btn-unsubmit:hover { background: var(--accent-glow); }
+.btn-export { padding: 7px 18px; background: transparent; color: var(--accent); border: 1px solid var(--accent); cursor: pointer; font-family: 'Barlow Condensed', sans-serif; font-size: 12px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; border-radius: 2px; transition: all .15s; }
+.btn-export:hover { background: var(--accent-glow); }
 
-/* TOOLTIP */
-.tooltip {
-  font-size: 10px;
-  color: var(--text-dim);
-  margin-top: 4px;
-}
-
-/* INLINE INPUT LABEL */
-.inline-label {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 4px;
-}
-
-/* MONTHLY SCORECARD */
-.scorecard-grid {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 10px;
-  margin-bottom: 1.5rem;
-}
-.sc-box {
-  background: #FFFFFF;
-  border: 1px solid #E0E0E0;
-  border-radius: 4px;
-  padding: 1rem;
-  text-align: center;
-}
-.sc-val {
-  font-family: 'Barlow Condensed', sans-serif;
-  font-size: 36px;
-  font-weight: 700;
-  color: var(--green);
-  line-height: 1;
-}
-.sc-val.mid { color: var(--amber); }
-.sc-val.low { color: var(--red); }
-.sc-label {
-  font-family: 'Space Mono', monospace;
-  font-size: 9px;
-  color: #FFFFFF;
-  letter-spacing: .08em;
-  text-transform: uppercase;
-  margin-top: 6px;
-}
-
-/* PDF EXPORT BTN */
-.btn-export {
-  padding: 7px 18px;
-  background: transparent;
-  color: var(--green);
-  border: 1px solid var(--green);
-  cursor: pointer;
-  font-family: 'Barlow Condensed', sans-serif;
-  font-size: 12px;
-  font-weight: 700;
-  letter-spacing: .1em;
-  text-transform: uppercase;
-  border-radius: 2px;
-  transition: all .15s;
-}
-.btn-export:hover { background: var(--green-glow); }
-
-/* REP CALL STATUS inline */
-.rep-call-status {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  margin-top: 4px;
-}
-.inline-num {
-  width: 50px;
-  background: var(--surface-3);
-  border: 1px solid transparent;
-  border-radius: 2px;
-  padding: 3px 6px;
-  color: var(--text);
-  font-family: 'Space Mono', monospace;
-  font-size: 11px;
-  text-align: center;
-}
-.inline-num:focus { outline: none; border-color: var(--green); }
+/* ── HOLIDAY TAGS ────────────────────────────────────────── */
+.holiday-tag { display: inline-flex; align-items: center; gap: 6px; background: #FFF3E0; border: 1px solid rgba(184,104,0,0.25); border-radius: 3px; padding: 3px 8px; font-family: 'Space Mono', monospace; font-size: 10px; color: #B86800; }
+.holiday-tag button { background: none; border: none; cursor: pointer; color: #B86800; font-size: 12px; line-height: 1; padding: 0; margin-left: 2px; }
+.holiday-tag button:hover { color: #CC2222; }
 </style>
 </head>
-<body>
+<body class="theme-ortho">
 
+<!-- ── NAV ─────────────────────────────────────────────── -->
 <nav class="nav">
-  <div class="nav-brand">
-    <div class="nav-logo">Vive DME</div>
-    <div class="nav-subtitle">DME Sales Manager OS</div>
-  </div>
-  <div class="nav-tabs">
-    <button class="nav-tab active" onclick="switchTab('daily')">Daily Log</button>
-    <button class="nav-tab" onclick="switchTab('weekly')">Weekly Review</button>
-    <button class="nav-tab" onclick="switchTab('monthly')">Monthly Review</button>
-    <button class="nav-tab" onclick="switchTab('sales')">Sales Tracker</button>
-  </div>
-  <div class="nav-right">
-    <div class="date-nav">
-      <button class="date-btn" onclick="changeDate(-1)">‹</button>
-      <div class="date-display" id="dateDisplay">—</div>
-      <button class="date-btn" onclick="changeDate(1)">›</button>
+  <!-- Row 1: Brand + Date/Submit -->
+  <div class="nav-row1">
+    <div class="nav-brand">
+      <div class="nav-logo" id="navLogo">CoreTech</div>
+      <div class="nav-subtitle" id="navSubtitle">Ortho Call Tracker</div>
     </div>
-    <button class="btn-submit" id="submitBtn" onclick="submitDay()">Submit Day</button>
-    <button class="btn-export" id="unsubmitBtn" onclick="unsubmitDay()" style="display:none;padding:7px 14px;font-size:12px;">↩ Unsubmit</button>
+    <div class="nav-right">
+      <div class="date-nav" id="dateNav">
+        <button class="date-btn" onclick="changeDate(-1)">&#8249;</button>
+        <div class="date-display" id="dateDisplay">—</div>
+        <button class="date-btn" onclick="changeDate(1)">&#8250;</button>
+      </div>
+      <button class="btn-submit" id="submitBtn" onclick="submitDay()">Submit Day</button>
+      <button class="btn-unsubmit" id="unsubmitBtn" onclick="unsubmitDay()">&#8629; Unsubmit</button>
+    </div>
+  </div>
+  <!-- Row 2: Team selector + Tabs -->
+  <div class="nav-row2">
+    <div class="team-selector" id="teamSelector">
+      <button class="team-btn active" id="btnOrtho" onclick="switchTeam('ortho')">Ortho</button>
+      <button class="team-btn" id="btnDme" onclick="switchTeam('dme')">DME</button>
+    </div>
+    <div style="width:1px;height:20px;background:#E0E0E0;margin:0 6px;"></div>
+    <button class="nav-tab" id="tabBtnDirector" onclick="switchTab('director')">⚡ Director View</button>
+    <button class="nav-tab active" onclick="switchTab('manager')">Manager Calls</button>
+    <button class="nav-tab" onclick="switchTab('reps')">Rep Calls</button>
+    <button class="nav-tab" onclick="switchTab('monthly')">Monthly Report</button>
   </div>
 </nav>
 
 <div class="main">
 
-<!-- ==================== DAILY TAB ==================== -->
-<div id="tab-daily" class="tab-content active">
+<!-- ===== MANAGER DAILY CALLS ===== -->
+<div id="tab-manager" class="tab-content active">
   <div class="submitted-banner" id="submittedBanner">✓ DAY SUBMITTED — click ↩ Unsubmit to make edits</div>
 
-  <!-- PROGRESS -->
-  <div class="prog-wrap">
-    <div class="prog-header">
-      <span class="prog-label">Daily Activity Progress</span>
-      <span class="prog-pct" id="dailyPct">0%</span>
-    </div>
-    <div class="prog-bar"><div class="prog-fill" id="dailyFill" style="width:0%"></div></div>
-  </div>
-
-  <!-- BLOCK 1: PIPELINE HEALTH -->
   <div class="card accent">
-    <div class="card-title">🔬 Pipeline Health Review <span class="badge">DAILY</span></div>
-    <div class="check-list">
-      <label class="check-item" onclick="toggleCheck(this,'pipe_no_contact_90')">
-        <div class="check-box"></div>
-        <div class="check-label">No customers not contacted in 90+ days</div>
-      </label>
-      <label class="check-item" onclick="toggleCheck(this,'pipe_buying_30_60')">
-        <div class="check-box"></div>
-        <div class="check-label">No buying customers not ordered in 60+ days and not contacted in 30+ days</div>
-      </label>
-      <label class="check-item" onclick="toggleCheck(this,'pipe_over_500')">
-        <div class="check-box"></div>
-        <div class="check-label">All reps over 500 opportunities</div>
-      </label>
-      <label class="check-item" onclick="toggleCheck(this,'pipe_no_late')">
-        <div class="check-box"></div>
-        <div class="check-label">No late activities</div>
-      </label>
+    <div class="card-title">📞 Manager Daily Calls <span class="badge">10+ CALLS / IN-OFFICE DAY</span></div>
+    <div class="day-type-row">
+      <span class="day-type-label">Day Type:</span>
+      <button id="dayTypeInOffice" class="day-type-btn" onclick="setDayType('in_office')" style="border:2px solid var(--accent);background:var(--accent);color:#fff;">In Office</button>
+      <button id="dayTypeOutOfOffice" class="day-type-btn" onclick="setDayType('out_of_office')" style="border:2px solid #CCC;background:#FFF;color:#888;">Out of Office</button>
+      <span class="day-note" id="dayTypeNote"></span>
     </div>
-    <span class="note-label">Accountability Concerns / General Notes</span>
-    <textarea class="note-area" id="pipe_notes" placeholder="Note any pipeline concerns, rep accountability issues, or follow-up items..." onchange="saveDailyField('pipe_notes',this.value)"></textarea>
-  </div>
-
-  <!-- BLOCK 2: ROTTING / STALLED OPPS -->
-  <div class="card accent-amber">
-    <div class="card-title">⚠️ Rotting & Stalled Opportunities <span class="badge">DAILY</span></div>
-    <div class="check-list">
-      <label class="check-item" onclick="toggleCheck(this,'rot_reviewed')">
-        <div class="check-box"></div>
-        <div class="check-label">Reviewed all rotting/stalled opportunities in CRM</div>
-      </label>
-      <label class="check-item" onclick="toggleCheck(this,'rot_activities')">
-        <div class="check-box"></div>
-        <div class="check-label">Confirmed rotting opps WITH activity set are extended (not closed)</div>
-      </label>
-      <label class="check-item" onclick="toggleCheck(this,'rot_no_activity')">
-        <div class="check-box"></div>
-        <div class="check-label">Addressed all rotting opps WITHOUT activity — assigned action or closed</div>
-      </label>
-    </div>
-    <span class="note-label">Rotting Opp Notes / Action Items</span>
-    <textarea class="note-area" id="rot_notes" placeholder="Note any specific stalled accounts, reps responsible, and next steps..." onchange="saveDailyField('rot_notes',this.value)"></textarea>
-  </div>
-
-  <!-- BLOCK 3: EXPECTED CLOSING -->
-  <div class="card accent">
-    <div class="card-title">🎯 Expected Closing Accounts <span class="badge">DAILY</span></div>
-    <div class="check-list">
-      <label class="check-item" onclick="toggleCheck(this,'close_activity_set')">
-        <div class="check-box"></div>
-        <div class="check-label">All expected closing accounts have an activity set with a good game plan</div>
-      </label>
+    <div class="mgr-calls-row">
+      <span class="mgr-calls-label">Calls made today:</span>
+      <input type="number" class="num-input" id="calls_today" placeholder="0" onchange="saveDayField('calls_today', this.value); updateMgrStatus();">
+      <span id="mgrStatusBadge" class="gap-badge" style="display:none;"></span>
     </div>
     <span class="note-label">Notes</span>
-    <textarea class="note-area" id="close_notes" placeholder="List accounts expected to close, rep responsible, and game plan..." onchange="saveDailyField('close_notes',this.value)"></textarea>
+    <textarea class="note-area" id="mgr_notes" placeholder="Call notes, who you reached, follow-ups..." onchange="saveDayField('mgr_notes', this.value)"></textarea>
   </div>
 
-  <!-- BLOCK 4: STANDUP / ROLEPLAY / TRAINING -->
-  <div class="card accent">
-    <div class="card-title">🎙️ Stand-Up / Role-Play / Training <span class="badge">DAILY</span></div>
-    <div class="check-list">
-      <label class="check-item" onclick="toggleCheck(this,'standup_done')">
-        <div class="check-box"></div>
-        <div class="check-label">Stand-up / training completed</div>
-      </label>
-      <label class="check-item" onclick="toggleCheck(this,'roleplay_done')">
-        <div class="check-box"></div>
-        <div class="check-label">Role-play completed</div>
-      </label>
-    </div>
-    <span class="note-label">Notes</span>
-    <textarea class="note-area" id="standup_notes" placeholder="Topics covered, reps involved, objections worked, training focus..." onchange="saveDailyField('standup_notes',this.value)"></textarea>
-  </div>
-
-  <!-- BLOCK 5: 1:1 REP RIDE-ALONG -->
-  <div class="card accent">
-    <div class="card-title">👤 1:1 Rep Ride-Along / Field Time <span class="badge">DAILY — 1 HR</span></div>
-    <div class="check-list">
-      <label class="check-item" onclick="toggleCheck(this,'ooo_done')">
-        <div class="check-box"></div>
-        <div class="check-label">Completed 1-hour session with a rep today (field, call review, or coaching)</div>
-      </label>
-    </div>
-    <div class="spacer"></div>
-    <div class="rep-grid" id="repGrid">
-      <!-- populated by JS -->
-    </div>
-    <span class="note-label">1:1 Notes — Who Did You Work With & What Did You Do?</span>
-    <textarea class="note-area" id="ooo_notes" placeholder="Rep name, accounts visited or calls reviewed, key coaching points, follow-up actions..." onchange="saveDailyField('ooo_notes',this.value)"></textarea>
-  </div>
-
-  <!-- BLOCK 6: PERSONAL CALLS -->
-  <div class="card accent">
-    <div class="card-title">📞 Manager Calls <span class="badge">DAILY — 10+ CALLS</span></div>
-    <div class="check-list">
-      <label class="check-item" onclick="toggleCheck(this,'calls_done')">
-        <div class="check-box"></div>
-        <div class="check-label">Made 10+ outbound calls today</div>
-      </label>
-    </div>
-    <div style="display:flex;align-items:center;gap:12px;margin-top:10px;">
-      <span style="font-size:12px;color:var(--text-muted);">Calls made today:</span>
-      <input type="number" class="num-input" id="calls_today" placeholder="0" onchange="saveDailyField('calls_today',this.value);updateCallStatus()" style="width:70px;">
-      <span id="callStatusBadge" class="gap-badge" style="display:none;"></span>
+  <div class="card">
+    <div class="card-title">📊 Month-to-Date Progress</div>
+    <div class="prog-wrap">
+      <div class="prog-header">
+        <span class="prog-label">Manager Calls (In-Office Days)</span>
+        <span class="prog-pct" id="mgrMonthPct">—</span>
+      </div>
+      <div class="prog-bar"><div class="prog-fill" id="mgrMonthFill" style="width:0%"></div></div>
+      <div style="display:flex;justify-content:space-between;margin-top:5px;">
+        <span style="font-size:11px;color:#888;" id="mgrMonthDetail">—</span>
+        <span style="font-family:'Space Mono',monospace;font-size:10px;color:#888;" id="mgrMonthTarget">—</span>
+      </div>
     </div>
   </div>
+</div>
 
-</div><!-- end daily tab -->
-
-
-<!-- ==================== WEEKLY TAB ==================== -->
-<div id="tab-weekly" class="tab-content">
-
-  <div class="section-header">
-    <span class="section-tag">Weekly</span>
-    <span class="section-title">Week Review</span>
-  </div>
-
+<!-- ===== REP WEEKLY CALLS ===== -->
+<div id="tab-reps" class="tab-content">
   <div class="week-nav">
     <button class="week-btn" onclick="changeWeek(-1)">‹ Prev</button>
     <div class="week-label" id="weekLabel">—</div>
     <button class="week-btn" onclick="changeWeek(1)">Next ›</button>
   </div>
-
-  <div class="week-day-tabs" id="weekDayTabs">
-    <!-- populated by JS -->
-  </div>
-
-  <!-- WEEKLY CHECKLIST -->
-  <div class="card accent" style="margin-bottom:1rem;">
-    <div class="card-title">📋 Weekly Checklist</div>
-    <div class="check-list">
-      <label class="check-item" onclick="toggleWeekCheck(this,'w_coaching')">
-        <div class="check-box"></div>
-        <div class="check-label">Completed a call coaching session this week</div>
-      </label>
-    </div>
-    <span class="note-label">Weekly Wins</span>
-    <textarea class="note-area" id="w_wins" placeholder="Deals closed, rep improvements, pipeline growth..." onchange="saveWeekField('w_wins',this.value)"></textarea>
-    <span class="note-label">Concerns / Coaching Focus</span>
-    <textarea class="note-area" id="w_concerns" placeholder="Reps behind, stuck deals, coaching priorities for next week..." onchange="saveWeekField('w_concerns',this.value)"></textarea>
-  </div>
-
-  <!-- CALL TRACKING BY REP -->
-  <div class="card accent-amber">
-    <div class="card-title">📞 Weekly Call Tracking by Rep <span class="badge" style="font-size:9px;margin-left:4px;">50 CALLS / OFFICE DAY</span></div>
-    <table class="call-table" id="callReviewTable">
+  <div class="card accent">
+    <div class="card-title">👥 Rep Weekly Call Tracking <span class="badge">50 CALLS / OFFICE DAY</span></div>
+    <table class="call-table">
       <thead>
         <tr>
           <th>Rep Name</th>
-          <th>Office Days (Week)</th>
+          <th>Office Days</th>
           <th>Weekly Target</th>
           <th>Calls This Week</th>
           <th>Gap</th>
           <th>Status</th>
         </tr>
       </thead>
-      <tbody id="callReviewBody">
-        <!-- populated by JS -->
-      </tbody>
+      <tbody id="repCallBody"></tbody>
     </table>
   </div>
+</div>
 
-</div><!-- end weekly tab -->
-
-
-<!-- ==================== MONTHLY TAB ==================== -->
+<!-- ===== MONTHLY REPORT ===== -->
 <div id="tab-monthly" class="tab-content">
-
-  <div class="section-header">
-    <span class="section-tag">Monthly</span>
-    <span class="section-title">Monthly Review &amp; Scorecard</span>
-    <div style="margin-left:auto;display:flex;gap:8px;align-items:center;">
-      <span style="font-family:'Space Mono',monospace;font-size:10px;color:var(--text-muted);" id="monthLabel">—</span>
-      <button class="btn-export" onclick="exportPDF()">Export PDF</button>
-    </div>
+  <div class="month-nav">
+    <button class="month-btn" onclick="changeMonth(-1)">‹ Prev</button>
+    <div class="month-label-display" id="monthLabelDisplay">—</div>
+    <button class="month-btn" onclick="changeMonth(1)">Next ›</button>
+    <button class="btn-export" onclick="window.print()">Export PDF</button>
   </div>
 
-  <!-- SCORECARD — 100% ACTIVITY -->
-  <div class="scorecard-grid">
-    <div class="sc-box">
-      <div class="sc-val" id="sc_overall">—</div>
-      <div class="sc-label">Activity Score</div>
+  <div class="card" style="margin-bottom:1rem;">
+    <div class="card-title">🏖️ Holidays / Office Closures <span class="badge">EXCLUDED FROM BUSINESS DAY COUNT</span></div>
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px;flex-wrap:wrap;">
+      <input type="date" id="holidayDateInput" class="call-input" style="width:160px;padding:5px 8px;font-family:'Barlow',sans-serif;font-size:12px;">
+      <input type="text" id="holidayLabelInput" class="call-input" style="width:180px;padding:5px 8px;font-family:'Barlow',sans-serif;font-size:12px;" placeholder="Holiday name (optional)">
+      <button onclick="addHoliday()" style="padding:5px 14px;background:var(--accent);color:#fff;border:none;border-radius:2px;cursor:pointer;font-family:'Barlow Condensed',sans-serif;font-size:12px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;">Add</button>
     </div>
-    <div class="sc-box">
-      <div class="sc-val" id="sc_days">—</div>
-      <div class="sc-label">Days Submitted</div>
-    </div>
-    <div class="sc-box">
-      <div class="sc-val" id="sc_avg">—</div>
-      <div class="sc-label">Avg Daily Completion</div>
-    </div>
+    <div id="holidayList" style="display:flex;flex-wrap:wrap;gap:6px;"></div>
+    <div style="margin-top:8px;font-family:'Space Mono',monospace;font-size:10px;color:#888;" id="bizDaysRemaining">—</div>
   </div>
 
-  <!-- DAY LOG -->
-  <div class="card">
-    <div class="card-title">📅 Monthly Day Log</div>
-    <div class="month-grid" id="monthGrid">
-      <!-- populated by JS -->
-    </div>
-  </div>
-
-  <!-- MONTHLY CALL SUMMARY -->
-  <div class="card accent-amber" style="margin-bottom:1rem;">
-    <div class="card-title">📞 Monthly Call Summary <span class="badge" style="font-size:9px;">50 CALLS / OFFICE DAY</span></div>
-    <table class="call-table" id="monthCallTable">
+  <div class="card accent-amber">
+    <div class="card-title">📞 Monthly Call Summary <span class="badge" id="monthSummaryBadge">50/OFFICE DAY (REPS) · 10/OFFICE DAY (MGR)</span></div>
+    <table class="call-table">
       <thead>
         <tr>
-          <th>Rep / Manager</th>
-          <th>Total Office Days (Month)</th>
+          <th>Name</th>
+          <th>Office Days</th>
           <th>Monthly Target</th>
-          <th>Total Calls Logged</th>
+          <th>Total Calls</th>
           <th>Gap</th>
           <th>Status</th>
+          <th>Avg/Day Needed</th>
         </tr>
       </thead>
-      <tbody id="monthCallBody">
-        <!-- populated by JS -->
-      </tbody>
+      <tbody id="monthCallBody"></tbody>
     </table>
   </div>
+</div>
 
-  <!-- MONTHLY CHECKLIST ITEMS -->
-  <div class="card accent" style="margin-bottom:1rem;">
-    <div class="card-title">✅ Monthly Items</div>
-    <div class="check-list">
-      <label class="check-item" onclick="toggleMonthCheck(this,'m_rep_reports')">
-        <div class="check-box"></div>
-        <div class="check-label">All monthly rep reports signed</div>
-      </label>
-      <label class="check-item" onclick="toggleMonthCheck(this,'m_perf_warnings')">
-        <div class="check-box"></div>
-        <div class="check-label">Performance warnings given for reps who did not hit activity metrics in the previous month</div>
-      </label>
-      <label class="check-item" onclick="toggleMonthCheck(this,'m_gameplan')">
-        <div class="check-box"></div>
-        <div class="check-label">All reps tracking behind have a game plan</div>
-      </label>
-    </div>
-    <span class="note-label">Notes</span>
-    <textarea class="note-area" id="m_monthly_notes" placeholder="Rep performance concerns, warnings issued, game plans in place..." onchange="saveMonthField('m_monthly_notes',this.value)"></textarea>
+<!-- ===== DIRECTOR VIEW ===== -->
+<div id="tab-director" class="tab-content">
+
+  <div style="margin-bottom:1.5rem;">
+    <div style="font-family:'Space Mono',monospace;font-size:10px;color:#888;letter-spacing:.06em;text-transform:uppercase;margin-bottom:4px;">AS OF</div>
+    <div style="font-family:'Barlow Condensed',sans-serif;font-size:20px;font-weight:700;color:#111;" id="directorAsOf">—</div>
+    <div style="font-size:11px;color:#AAA;margin-top:2px;">Calls through end of previous business day · Excludes today</div>
   </div>
 
-  <!-- MONTHLY NOTES -->
-  <div class="card">
-    <div class="card-title">📝 Monthly Summary Notes</div>
-    <div class="grid-2">
-      <div>
-        <span class="note-label">Monthly Wins</span>
-        <textarea class="note-area" id="m_wins" placeholder="Top deals, rep highlights, pipeline milestones..." onchange="saveMonthField('m_wins',this.value)" style="min-height:100px;"></textarea>
-        <span class="note-label">Rep Performance Summary</span>
-        <textarea class="note-area" id="m_reps" placeholder="How each rep performed vs. activity targets and sales goals..." onchange="saveMonthField('m_reps',this.value)" style="min-height:100px;"></textarea>
-      </div>
-      <div>
-        <span class="note-label">Concerns / Issues</span>
-        <textarea class="note-area" id="m_concerns" placeholder="Underperforming reps, pipeline health concerns, coaching needs..." onchange="saveMonthField('m_concerns',this.value)" style="min-height:100px;"></textarea>
-        <span class="note-label">Priorities for Next Month</span>
-        <textarea class="note-area" id="m_next" placeholder="Key focus areas, targets, training priorities..." onchange="saveMonthField('m_next',this.value)" style="min-height:100px;"></textarea>
-      </div>
-    </div>
-  </div>
-
-</div><!-- end monthly tab -->
-
-
-<!-- ==================== SALES TAB ==================== -->
-<div id="tab-sales" class="tab-content">
-
-  <div class="section-header">
-    <span class="section-tag">Sales</span>
-    <span class="section-title">Sales Pace Tracker</span>
-    <span class="section-desc">Optional — track team and rep-level revenue pace</span>
-  </div>
-
-  <!-- TEAM PACE -->
-  <div class="card accent">
-    <div class="card-title">📈 Team Monthly Goals</div>
-    <div class="goal-card" style="background:var(--surface-2);border:none;padding:0.5rem 0;">
-      <div class="goal-row">
-        <div class="goal-name" style="font-size:11px;color:var(--text-dim);">METRIC</div>
-        <div style="width:130px;font-family:'Space Mono',monospace;font-size:10px;color:var(--text-dim);">BASELINE GOAL</div>
-        <div style="width:130px;font-family:'Space Mono',monospace;font-size:10px;color:var(--text-dim);">MTD ACTUAL</div>
-        <div style="flex:1;text-align:right;font-family:'Space Mono',monospace;font-size:10px;color:var(--text-dim);">PACE</div>
-      </div>
-      <div class="goal-row">
-        <div class="goal-name">Team Revenue</div>
-        <input type="number" class="goal-input" id="g_team_goal" placeholder="$0" onchange="saveSalesField('g_team_goal',this.value);calcPace()" style="width:130px;">
-        <input type="number" class="goal-input" id="g_team_actual" placeholder="$0" onchange="saveSalesField('g_team_actual',this.value);calcPace()" style="width:130px;">
-        <div class="goal-calc" id="g_team_pace">—</div>
-      </div>
-      <div class="goal-row">
-        <div class="goal-name">Units / Orders</div>
-        <input type="number" class="goal-input" id="g_units_goal" placeholder="0" onchange="saveSalesField('g_units_goal',this.value);calcPace()" style="width:130px;">
-        <input type="number" class="goal-input" id="g_units_actual" placeholder="0" onchange="saveSalesField('g_units_actual',this.value);calcPace()" style="width:130px;">
-        <div class="goal-calc" id="g_units_pace">—</div>
-      </div>
-      <div class="goal-row">
-        <div class="goal-name">New Accounts</div>
-        <input type="number" class="goal-input" id="g_accts_goal" placeholder="0" onchange="saveSalesField('g_accts_goal',this.value);calcPace()" style="width:130px;">
-        <input type="number" class="goal-input" id="g_accts_actual" placeholder="0" onchange="saveSalesField('g_accts_actual',this.value);calcPace()" style="width:130px;">
-        <div class="goal-calc" id="g_accts_pace">—</div>
-      </div>
+  <!-- ORTHO SECTION -->
+  <div style="margin-bottom:2rem;">
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:1rem;padding-bottom:8px;border-bottom:3px solid #178040;">
+      <div style="background:#178040;color:#fff;font-family:'Barlow Condensed',sans-serif;font-size:14px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;padding:3px 12px;">CoreTech Ortho</div>
+      <div style="font-family:'Space Mono',monospace;font-size:10px;color:#888;" id="orthoSummaryLine">—</div>
     </div>
 
-    <!-- PACE BARS -->
-    <div class="spacer"></div>
-    <div id="paceBars"></div>
+    <!-- Ortho Manager Row -->
+    <div class="card" style="margin-bottom:10px;padding:1rem 1.25rem;border-left:3px solid #178040;">
+      <div style="font-family:'Barlow Condensed',sans-serif;font-size:12px;font-weight:700;color:#178040;letter-spacing:.08em;text-transform:uppercase;margin-bottom:10px;">Sales Manager</div>
+      <table class="call-table" id="orthoMgrTable">
+        <thead><tr>
+          <th>Role</th><th>Office Days (MTD)</th><th>Target</th><th>Calls Logged</th><th>Gap</th><th>Status</th><th>Avg/Day Needed</th>
+        </tr></thead>
+        <tbody id="orthoMgrBody"></tbody>
+      </table>
+    </div>
+
+    <!-- Ortho Reps -->
+    <div class="card" style="padding:1rem 1.25rem;border-left:3px solid #178040;">
+      <div style="font-family:'Barlow Condensed',sans-serif;font-size:12px;font-weight:700;color:#178040;letter-spacing:.08em;text-transform:uppercase;margin-bottom:10px;">Sales Reps</div>
+      <table class="call-table" id="orthoRepsTable">
+        <thead><tr>
+          <th>Rep</th><th>Office Days (MTD)</th><th>Target</th><th>Calls Logged</th><th>Gap</th><th>Status</th><th>Avg/Day Needed</th>
+        </tr></thead>
+        <tbody id="orthoRepsBody"></tbody>
+      </table>
+    </div>
   </div>
 
-  <!-- REP LEVEL SALES -->
-  <div class="card">
-    <div class="card-title">👥 Rep-Level Sales This Month</div>
-    <table class="pipeline-table" id="repSalesTable">
-      <thead>
-        <tr>
-          <th>Rep</th>
-          <th>Monthly Goal ($)</th>
-          <th>MTD Actual ($)</th>
-          <th>Pace ($)</th>
-          <th>% to Goal</th>
-          <th>Notes</th>
-        </tr>
-      </thead>
-      <tbody id="repSalesBody">
-        <!-- populated by JS -->
-      </tbody>
-    </table>
+  <!-- DME SECTION -->
+  <div>
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:1rem;padding-bottom:8px;border-bottom:3px solid #0E8A8A;">
+      <div style="background:#0E8A8A;color:#fff;font-family:'Barlow Condensed',sans-serif;font-size:14px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;padding:3px 12px;">Vive DME</div>
+      <div style="font-family:'Space Mono',monospace;font-size:10px;color:#888;" id="dmeSummaryLine">—</div>
+    </div>
+
+    <!-- DME Manager Row -->
+    <div class="card" style="margin-bottom:10px;padding:1rem 1.25rem;border-left:3px solid #0E8A8A;">
+      <div style="font-family:'Barlow Condensed',sans-serif;font-size:12px;font-weight:700;color:#0E8A8A;letter-spacing:.08em;text-transform:uppercase;margin-bottom:10px;">Sales Manager</div>
+      <table class="call-table" id="dmeMgrTable">
+        <thead><tr>
+          <th>Role</th><th>Office Days (MTD)</th><th>Target</th><th>Calls Logged</th><th>Gap</th><th>Status</th><th>Avg/Day Needed</th>
+        </tr></thead>
+        <tbody id="dmeMgrBody"></tbody>
+      </table>
+    </div>
+
+    <!-- DME Reps -->
+    <div class="card" style="padding:1rem 1.25rem;border-left:3px solid #0E8A8A;">
+      <div style="font-family:'Barlow Condensed',sans-serif;font-size:12px;font-weight:700;color:#0E8A8A;letter-spacing:.08em;text-transform:uppercase;margin-bottom:10px;">Sales Reps</div>
+      <table class="call-table" id="dmeRepsTable">
+        <thead><tr>
+          <th>Rep</th><th>Office Days (MTD)</th><th>Target</th><th>Calls Logged</th><th>Gap</th><th>Status</th><th>Avg/Day Needed</th>
+        </tr></thead>
+        <tbody id="dmeRepsBody"></tbody>
+      </table>
+    </div>
   </div>
 
-  <!-- BUSINESS DAYS INPUT -->
-  <div class="card" style="display:flex;align-items:center;gap:20px;padding:1rem 1.25rem;">
-    <div style="font-family:'Barlow Condensed',sans-serif;font-size:13px;color:var(--text-muted);text-transform:uppercase;letter-spacing:.06em;">Business Days This Month:</div>
-    <input type="number" class="num-input" id="biz_days" placeholder="22" onchange="saveSalesField('biz_days',this.value);calcPace()" style="width:70px;">
-    <div style="font-family:'Barlow Condensed',sans-serif;font-size:13px;color:var(--text-muted);text-transform:uppercase;letter-spacing:.06em;">Business Days Elapsed:</div>
-    <input type="number" class="num-input" id="biz_elapsed" placeholder="0" onchange="saveSalesField('biz_elapsed',this.value);calcPace()" style="width:70px;">
-  </div>
-
-</div><!-- end sales tab -->
+</div><!-- end director tab -->
 
 </div><!-- end main -->
 
@@ -1276,742 +413,601 @@ async function loadFromSupabase() {
   }
 }
 
-// ============================================================
-// CONFIG
-// ============================================================
-const REP_COUNT = 9;
-const DAILY_CHECKS = ['pipe_no_contact_90','pipe_buying_30_60','pipe_over_500','pipe_no_late','rot_action_plan','rot_extended','close_activity_set','standup_done','roleplay_done','ooo_done','calls_done'];
-const TOTAL_DAILY = DAILY_CHECKS.length; // 11 items
+// ── TEAM CONFIG ───────────────────────────────────────────
+const TEAMS = {
+  ortho: { label: 'CoreTech', subtitle: 'Ortho Call Tracker', repCount: 6, prefix: 'ct_calls_', theme: 'theme-ortho' },
+  dme:   { label: 'Vive DME', subtitle: 'DME Call Tracker',   repCount: 9, prefix: 'dme_calls_', theme: 'theme-dme' }
+};
 
-const WEEK_CHECKS = ['w_coaching'];
-const MONTH_CHECKS = ['m_rep_reports','m_perf_warnings','m_gameplan'];
-
+let currentTeam = localStorage.getItem('vive_active_team') || 'ortho';
 let currentDate = new Date();
 let currentWeekOffset = 0;
-let currentMonth = new Date();
+let currentMonthOffset = 0;
+let currentTab = 'manager';
 
-// ============================================================
-// STORAGE HELPERS
-// ============================================================
-function dateKey(d) {
-  return d.toISOString().slice(0,10);
+// ── Team helpers ─────────────────────────────────────────
+function cfg() { return TEAMS[currentTeam]; }
+function REP_COUNT() { return cfg().repCount; }
+function PREFIX() { return cfg().prefix; }
+
+function switchTeam(team) {
+  currentTeam = team;
+  localStorage.setItem('vive_active_team', team);
+  const c = cfg();
+  document.body.className = c.theme;
+  document.getElementById('navLogo').textContent = c.label;
+  document.getElementById('navSubtitle').textContent = c.subtitle;
+  document.getElementById('btnOrtho').className = 'team-btn' + (team==='ortho'?' active':'');
+  document.getElementById('btnDme').className = 'team-btn' + (team==='dme'?' active':'');
+  // Reload current tab
+  if (currentTab==='manager') loadManagerTab();
+  if (currentTab==='reps') loadRepTab();
+  if (currentTab==='monthly') loadMonthlyTab();
 }
-function getDayData(d) {
-  const k = 'dme_day_' + dateKey(d);
-  try { return JSON.parse(localStorage.getItem(k)) || {}; } catch { return {}; }
-}
+
+// ── Storage ───────────────────────────────────────────────
+function dateKey(d) { return new Date(d).toISOString().slice(0,10); }
+function getDayData(d) { try { return JSON.parse(localStorage.getItem(PREFIX()+'day_'+dateKey(d))) || {}; } catch { return {}; } }
 function saveDayData(d, data) {
-  const k = 'dme_day_' + dateKey(d);
+  const k = PREFIX()+'day_'+dateKey(d);
   localStorage.setItem(k, JSON.stringify(data));
   supabaseSync(k, data);
 }
-function getWeekData(weekKey) {
-  const k = 'dme_week_' + weekKey;
-  try { return JSON.parse(localStorage.getItem(k)) || {}; } catch { return {}; }
-}
-function saveWeekData(weekKey, data) {
-  const k = 'dme_week_' + weekKey;
+function getWeekData(wk) { try { return JSON.parse(localStorage.getItem(PREFIX()+'week_'+wk)) || {}; } catch { return {}; } }
+function saveWeekData(wk, data) {
+  const k = PREFIX()+'week_'+wk;
   localStorage.setItem(k, JSON.stringify(data));
   supabaseSync(k, data);
 }
-function getMonthData(monthKey) {
-  const k = 'dme_month_' + monthKey;
-  try { return JSON.parse(localStorage.getItem(k)) || {}; } catch { return {}; }
+function getRepNames() { try { return JSON.parse(localStorage.getItem(PREFIX()+'rep_names')) || Array(REP_COUNT()).fill(''); } catch { return Array(REP_COUNT()).fill(''); } }
+function saveRepNames(n) {
+  const k = PREFIX()+'rep_names';
+  localStorage.setItem(k, JSON.stringify(n));
+  supabaseSync(k, n);
 }
-function saveMonthData(monthKey, data) {
-  const k = 'dme_month_' + monthKey;
-  localStorage.setItem(k, JSON.stringify(data));
-  supabaseSync(k, data);
+function getHolidays() { try { return JSON.parse(localStorage.getItem(PREFIX()+'holidays')) || []; } catch { return []; } }
+function saveHolidays(h) {
+  const k = PREFIX()+'holidays';
+  localStorage.setItem(k, JSON.stringify(h));
+  supabaseSync(k, h);
 }
-function getSalesData() {
-  try { return JSON.parse(localStorage.getItem('dme_sales')) || {}; } catch { return {}; }
-}
-function saveSalesData(data) { localStorage.setItem('dme_sales', JSON.stringify(data)); supabaseSync('dme_sales', data); }
-function getRepNames() {
-  try { return JSON.parse(localStorage.getItem('dme_rep_names')) || Array(REP_COUNT).fill(''); } catch { return Array(REP_COUNT).fill(''); }
-}
-function saveRepNames(names) { localStorage.setItem('dme_rep_names', JSON.stringify(names)); supabaseSync('dme_rep_names', names); }
 
-// ============================================================
-// DATE NAV
-// ============================================================
+// ── Tab switching ─────────────────────────────────────────
+function switchTab(tab) {
+  currentTab = tab;
+  document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+  document.getElementById('tab-'+tab).classList.add('active');
+  document.querySelectorAll('.nav-tab').forEach(t => {
+    if (
+      (tab==='director'&&t.textContent.includes('Director'))||
+      (tab==='manager'&&t.textContent.includes('Manager'))||
+      (tab==='reps'&&t.textContent.includes('Rep'))||
+      (tab==='monthly'&&t.textContent.includes('Monthly'))
+    ) t.classList.add('active');
+  });
+  const showDate = tab==='manager';
+  const showTeam = tab!=='director';
+  document.getElementById('dateNav').style.display = showDate ? 'flex' : 'none';
+  document.getElementById('submitBtn').style.display = showDate ? 'inline-block' : 'none';
+  document.getElementById('unsubmitBtn').style.display = (showDate && getDayData(currentDate).submitted) ? 'inline-block' : 'none';
+  document.getElementById('teamSelector').style.display = showTeam ? 'flex' : 'none';
+  if (tab==='manager') loadManagerTab();
+  if (tab==='reps') loadRepTab();
+  if (tab==='monthly') loadMonthlyTab();
+  if (tab==='director') loadDirectorTab();
+}
+
+// ── Date nav ──────────────────────────────────────────────
 function changeDate(delta) {
   currentDate = new Date(currentDate);
   currentDate.setDate(currentDate.getDate() + delta);
-  loadDailyTab();
+  loadManagerTab();
 }
-function formatDate(d) {
-  return d.toLocaleDateString('en-US',{weekday:'short',month:'short',day:'numeric',year:'numeric'});
-}
+function formatDate(d) { return new Date(d).toLocaleDateString('en-US',{weekday:'short',month:'short',day:'numeric',year:'numeric'}); }
 
-// ============================================================
-// DAILY TAB
-// ============================================================
-function loadDailyTab() {
+// ── MANAGER TAB ───────────────────────────────────────────
+function loadManagerTab() {
   document.getElementById('dateDisplay').textContent = formatDate(currentDate);
   const data = getDayData(currentDate);
-  const submitted = data.submitted;
-
-  // Submitted banner + button
-  document.getElementById('submittedBanner').classList.toggle('show', !!submitted);
-  const btn = document.getElementById('submitBtn');
-  btn.textContent = submitted ? '✓ Submitted' : 'Submit Day';
-  btn.className = 'btn-submit' + (submitted ? ' submitted' : '');
+  const submitted = !!data.submitted;
+  document.getElementById('submittedBanner').classList.toggle('show', submitted);
+  document.getElementById('submitBtn').textContent = submitted ? '✓ Submitted' : 'Submit Day';
+  document.getElementById('submitBtn').className = 'btn-submit' + (submitted?' submitted':'');
   document.getElementById('unsubmitBtn').style.display = submitted ? 'inline-block' : 'none';
-
-  // Checkboxes
-  DAILY_CHECKS.forEach(id => {
-    const items = document.querySelectorAll('.check-item');
-    items.forEach(item => {
-      const fn = item.getAttribute('onclick');
-      if (fn && fn.includes("'" + id + "'")) {
-        const checked = !!(data.checks && data.checks[id]);
-        item.classList.toggle('checked', checked);
-        if (checked) item.querySelector('.check-box').innerHTML = '<span style="font-size:10px;color:var(--black);font-weight:700;">✓</span>';
-        else item.querySelector('.check-box').innerHTML = '';
-        item.style.pointerEvents = '';
-      }
-    });
-  });
-
-  // Text fields
-  const textFields = ['pipe_notes','rot_notes','close_notes','standup_notes','ooo_notes'];
-  textFields.forEach(id => {
-    const el = document.getElementById(id);
-    if (el) { el.value = (data.fields && data.fields[id]) || ''; el.disabled = false; }
-  });
-
-  // Number fields
-  const numFields = ['calls_today'];
-  numFields.forEach(id => {
-    const el = document.getElementById(id);
-    if (el) { el.value = (data.fields && data.fields[id]) || ''; el.disabled = false; }
-  });
-
-  updateDailyProgress();
-  updateCallStatus();
-  buildRepGrid(submitted);
+  document.getElementById('calls_today').value = (data.fields && data.fields['calls_today']) || '';
+  document.getElementById('mgr_notes').value = (data.fields && data.fields['mgr_notes']) || '';
+  renderDayType((data.fields && data.fields['day_type']) || 'in_office');
+  updateMgrStatus();
+  updateMgrMonthProgress();
 }
 
-function toggleCheck(el, id) {
+function saveDayField(id, val) {
   const data = getDayData(currentDate);
-  if (data.submitted) return;
-  if (!data.checks) data.checks = {};
-  const isChecked = !el.classList.contains('checked');
-  data.checks[id] = isChecked;
-  saveDayData(currentDate, data);
-  el.classList.toggle('checked', isChecked);
-  el.querySelector('.check-box').innerHTML = isChecked ? '<span style="font-size:10px;color:var(--black);font-weight:700;">✓</span>' : '';
-  updateDailyProgress();
-}
-
-function saveDailyField(id, val) {
-  const data = getDayData(currentDate);
-  if (data.submitted) return;
   if (!data.fields) data.fields = {};
   data.fields[id] = val;
   saveDayData(currentDate, data);
+  updateMgrMonthProgress();
 }
 
-function updateDailyProgress() {
-  const data = getDayData(currentDate);
-  const checks = data.checks || {};
-  const done = DAILY_CHECKS.filter(id => checks[id]).length;
-  const pct = Math.round((done / TOTAL_DAILY) * 100);
-  document.getElementById('dailyPct').textContent = pct + '%';
-  document.getElementById('dailyFill').style.width = pct + '%';
+function setDayType(type) { saveDayField('day_type', type); renderDayType(type); updateMgrStatus(); }
+
+function renderDayType(type) {
+  const inBtn = document.getElementById('dayTypeInOffice');
+  const outBtn = document.getElementById('dayTypeOutOfOffice');
+  const note = document.getElementById('dayTypeNote');
+  const activeStyle = 'border:2px solid var(--accent);background:var(--accent);color:#fff;padding:5px 16px;font-family:Barlow Condensed,sans-serif;font-size:12px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;border-radius:2px;cursor:pointer;';
+  const inactiveStyle = 'border:2px solid #CCC;background:#FFF;color:#888;padding:5px 16px;font-family:Barlow Condensed,sans-serif;font-size:12px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;border-radius:2px;cursor:pointer;';
+  if (type==='out_of_office') {
+    inBtn.style.cssText = inactiveStyle; outBtn.style.cssText = activeStyle;
+    note.textContent = 'Out of office — calls not required today';
+  } else {
+    inBtn.style.cssText = activeStyle; outBtn.style.cssText = inactiveStyle;
+    note.textContent = '';
+  }
 }
 
-function updateCallStatus() {
+function updateMgrStatus() {
   const data = getDayData(currentDate);
   const calls = parseInt((data.fields && data.fields['calls_today']) || 0);
-  const badge = document.getElementById('callStatusBadge');
+  const dayType = (data.fields && data.fields['day_type']) || 'in_office';
+  const badge = document.getElementById('mgrStatusBadge');
   if (calls === 0) { badge.style.display = 'none'; return; }
   badge.style.display = 'inline-block';
-  if (calls >= 10) { badge.className = 'gap-badge on-track'; badge.textContent = '✓ ON TRACK'; }
-  else { badge.className = 'gap-badge behind'; badge.textContent = (10 - calls) + ' SHORT'; }
+  if (dayType==='out_of_office') { badge.className='gap-badge on-track'; badge.textContent='✓ LOGGED'; }
+  else if (calls >= 10) { badge.className='gap-badge on-track'; badge.textContent='✓ ON TRACK'; }
+  else { badge.className='gap-badge behind'; badge.textContent=(10-calls)+' SHORT'; }
 }
 
 function submitDay() {
   const data = getDayData(currentDate);
   if (data.submitted) return;
-  data.submitted = true;
-  saveDayData(currentDate, data);
-  loadDailyTab();
+  data.submitted = true; saveDayData(currentDate, data); loadManagerTab();
 }
-
 function unsubmitDay() {
   const data = getDayData(currentDate);
-  if (!data.submitted) return;
-  delete data.submitted;
-  saveDayData(currentDate, data);
-  loadDailyTab();
+  delete data.submitted; saveDayData(currentDate, data); loadManagerTab();
 }
 
-// ============================================================
-// REP GRID (in 1:1 section)
-// ============================================================
-function buildRepGrid(submitted) {
-  const names = getRepNames();
-  const data = getDayData(currentDate);
-  const repData = (data.fields && data.fields.rep_ooo) || {};
-  const grid = document.getElementById('repGrid');
-  grid.innerHTML = '';
-  for (let i = 0; i < REP_COUNT; i++) {
-    const card = document.createElement('div');
-    card.className = 'rep-card';
-    card.innerHTML = `
-      <div class="rep-name">
-        <input class="rep-name-input" type="text" placeholder="Rep ${i+1} Name" value="${names[i]||''}" onchange="saveRepName(${i},this.value)">
-      </div>
-      <div class="rep-field">
-        <div class="rep-field-label">Worked with today?</div>
-        <select class="rep-input" onchange="saveRepOOO(${i},'worked',this.value)">
-          <option value="">—</option>
-          <option value="yes" ${repData[i]&&repData[i].worked==='yes'?'selected':''}>Yes</option>
-          <option value="no" ${repData[i]&&repData[i].worked==='no'?'selected':''}>No</option>
-        </select>
-      </div>
-      <div class="rep-field">
-        <div class="rep-field-label">What was covered?</div>
-        <input class="rep-input" type="text" placeholder="Field ride, call review, coaching..." value="${repData[i]&&repData[i].topic||''}" onchange="saveRepOOO(${i},'topic',this.value)">
-      </div>
-    `;
-    grid.appendChild(card);
+function updateMgrMonthProgress() {
+  const now = new Date();
+  const year = now.getFullYear(), month = now.getMonth();
+  const firstDay = new Date(year, month, 1);
+  const lastDay = new Date(year, month+1, 0);
+  let totalCalls = 0, officeDays = 0;
+  for (let d = new Date(firstDay); d <= now && d <= lastDay; d.setDate(d.getDate()+1)) {
+    if (d.getDay()===0||d.getDay()===6) continue;
+    const dd = getDayData(new Date(d));
+    totalCalls += parseInt((dd.fields && dd.fields['calls_today'])||0);
+    if (((dd.fields && dd.fields['day_type'])||'in_office')==='in_office') officeDays++;
   }
+  const target = officeDays * 10;
+  const pct = target > 0 ? Math.min(Math.round((totalCalls/target)*100), 120) : 0;
+  document.getElementById('mgrMonthPct').textContent = pct+'%';
+  document.getElementById('mgrMonthFill').style.width = Math.min(pct,100)+'%';
+  document.getElementById('mgrMonthDetail').textContent = totalCalls+' calls logged across '+officeDays+' in-office days';
+  document.getElementById('mgrMonthTarget').textContent = 'Target: '+target;
 }
 
-function saveRepName(i, val) {
-  const names = getRepNames();
-  names[i] = val;
-  saveRepNames(names);
-  buildCallReviewTable();
-  buildRepSalesTable();
-}
-
-function saveRepOOO(i, field, val) {
-  const data = getDayData(currentDate);
-  if (!data.fields) data.fields = {};
-  if (!data.fields.rep_ooo) data.fields.rep_ooo = {};
-  if (!data.fields.rep_ooo[i]) data.fields.rep_ooo[i] = {};
-  data.fields.rep_ooo[i][field] = val;
-  saveDayData(currentDate, data);
-}
-
-// ============================================================
-// TAB SWITCHING
-// ============================================================
-function switchTab(tab) {
-  document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
-  document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
-  document.getElementById('tab-' + tab).classList.add('active');
-  document.querySelectorAll('.nav-tab').forEach(t => { if (t.textContent.toLowerCase().includes(tab.slice(0,4))) t.classList.add('active'); });
-  if (tab === 'weekly') loadWeeklyTab();
-  if (tab === 'monthly') loadMonthlyTab();
-  if (tab === 'sales') loadSalesTab();
-}
-
-// ============================================================
-// WEEKLY TAB
-// ============================================================
+// ── REP TAB ───────────────────────────────────────────────
 function getWeekStart(offset) {
   const now = new Date();
   const day = now.getDay();
-  const diff = now.getDate() - day + (day === 0 ? -6 : 1);
-  const monday = new Date(now.setDate(diff));
-  monday.setDate(monday.getDate() + (offset * 7));
+  const monday = new Date(now);
+  monday.setDate(now.getDate() - (day===0?6:day-1) + (offset*7));
   return monday;
 }
-function weekKey(offset) {
-  const ws = getWeekStart(currentWeekOffset);
-  return ws.toISOString().slice(0,10);
-}
-function changeWeek(delta) { currentWeekOffset += delta; loadWeeklyTab(); }
+function weekKey(offset) { return getWeekStart(offset).toISOString().slice(0,10); }
+function changeWeek(delta) { currentWeekOffset += delta; loadRepTab(); }
 
-function loadWeeklyTab() {
+function loadRepTab() {
   const ws = getWeekStart(currentWeekOffset);
-  const we = new Date(ws); we.setDate(we.getDate() + 6);
+  const we = new Date(ws); we.setDate(we.getDate()+6);
   document.getElementById('weekLabel').textContent =
-    ws.toLocaleDateString('en-US',{month:'short',day:'numeric'}) + ' – ' +
+    ws.toLocaleDateString('en-US',{month:'short',day:'numeric'})+' – '+
     we.toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});
-
-  buildWeekDayTabs(ws);
-  buildCallReviewTable();
-  loadWeekChecks();
-  loadWeekFields();
+  buildRepCallTable();
 }
 
-function buildWeekDayTabs(ws) {
-  const container = document.getElementById('weekDayTabs');
-  container.innerHTML = '';
-  const days = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
-  for (let i = 0; i < 7; i++) {
-    const d = new Date(ws); d.setDate(d.getDate() + i);
-    const dayData = getDayData(d);
-    const pct = calcDayPct(d);
-    const tab = document.createElement('div');
-    tab.className = 'week-day-tab' + (dayData.submitted ? ' submitted' : '');
-    tab.innerHTML = `<div class="week-day-name">${days[i]}<br><span style="font-size:10px;font-weight:400;">${d.getDate()}</span></div><div class="week-day-pct">${dayData.submitted ? pct + '%' : '—'}</div>`;
-    container.appendChild(tab);
-  }
-}
-
-function calcDayPct(d) {
-  const data = getDayData(d);
-  const checks = data.checks || {};
-  const done = DAILY_CHECKS.filter(id => checks[id]).length;
-  return Math.round((done / TOTAL_DAILY) * 100);
-}
-
-function buildCallReviewTable() {
+function buildRepCallTable() {
   const names = getRepNames();
-  const wk = weekKey();
+  const wk = weekKey(currentWeekOffset);
   const wData = getWeekData(wk);
   const repCalls = wData.repCalls || {};
   const repOfficeDays = wData.repOfficeDays || {};
-
-  const tbody = document.getElementById('callReviewBody');
+  const tbody = document.getElementById('repCallBody');
   tbody.innerHTML = '';
-  for (let i = 0; i < REP_COUNT; i++) {
-    const repName = names[i] || 'Rep ' + (i + 1);
-    const officeDays = parseInt(repOfficeDays[i] || 0);
-    const target = officeDays * 50;
-    const calls = parseInt(repCalls[i] || 0);
-    const gap = target - calls;
+  for (let i = 0; i < REP_COUNT(); i++) {
+    const rawVal = repOfficeDays[i];
+    const hasValue = rawVal !== undefined && rawVal !== null && rawVal !== '';
+    const officeDays = hasValue ? parseFloat(rawVal) : null;
+    const target = (hasValue && officeDays > 0) ? Math.round(officeDays * 50) : 0;
+    const calls = parseInt(repCalls[i]||0);
+    const gap = target > 0 ? target-calls : 0;
     let statusHtml = '';
-    if (officeDays === 0) statusHtml = '<span class="gap-badge on-track">SET DAYS</span>';
-    else if (calls >= target) statusHtml = '<span class="gap-badge on-track">✓ ON TRACK</span>';
-    else if (gap <= target * 0.15) statusHtml = '<span class="gap-badge behind">-' + gap + '</span>';
-    else statusHtml = '<span class="gap-badge critical">-' + gap + '</span>';
-
+    if (!hasValue) {
+      statusHtml='<span class="gap-badge" style="opacity:.5;background:#EEE;color:#888;border:1px solid #DDD;">SET DAYS</span>';
+    } else if (officeDays === 0) {
+      statusHtml='<span class="gap-badge" style="background:#EEE;color:#555;border:1px solid #CCC;">NOT IN OFFICE</span>';
+    } else if (calls>=target) {
+      statusHtml='<span class="gap-badge on-track">✓ ON TRACK</span>';
+    } else if (gap<=target*0.15) {
+      statusHtml='<span class="gap-badge behind">-'+gap+' CALLS</span>';
+    } else {
+      statusHtml='<span class="gap-badge critical">-'+gap+' CALLS</span>';
+    }
+    const daysLabel = !hasValue ? '' : officeDays===0 ? '<div style="font-size:9px;color:#888;margin-top:2px;font-family:monospace;">0 calls req.</div>' : (officeDays%1!==0?'<div style="font-size:9px;color:#888;margin-top:2px;font-family:monospace;">'+Math.round(officeDays*50)+' calls req.</div>':'');
     const tr = document.createElement('tr');
     tr.innerHTML = `
-      <td><input type="text" class="rep-input" value="${repName === 'Rep '+(i+1) ? (names[i]||'') : repName}" placeholder="Rep ${i+1} Name" onchange="saveRepName(${i},this.value)" style="width:120px;font-weight:600;"></td>
-      <td><input type="number" class="call-input" value="${repOfficeDays[i]||''}" placeholder="0" onchange="saveRepOfficeDays(${i},this.value)" style="width:55px;"></td>
-      <td style="font-family:'Space Mono',monospace;font-size:11px;color:var(--text-muted);">${target > 0 ? target : '—'}</td>
+      <td><input type="text" class="rep-name-input" value="${names[i]||''}" placeholder="Rep ${i+1} Name" onchange="saveRepName(${i},this.value)"></td>
+      <td>
+        <input type="number" class="call-input" value="${hasValue?officeDays:''}" placeholder="—" step="0.5" min="0" max="7" onchange="saveRepOfficeDays(${i},this.value)" style="width:65px;">
+        ${daysLabel}
+      </td>
+      <td style="font-family:monospace;font-size:11px;color:#888;">${target>0?target:(hasValue&&officeDays===0?'0':'—')}</td>
       <td><input type="number" class="call-input" value="${repCalls[i]||''}" placeholder="0" onchange="saveRepCalls(${i},this.value)"></td>
-      <td style="font-family:'Space Mono',monospace;font-size:11px;color:${gap>0&&target>0?'var(--amber)':'var(--green)'};">${target>0?(gap>0?'-'+gap:'+'+Math.abs(gap)):'—'}</td>
+      <td style="font-family:monospace;font-size:11px;color:${gap>0&&target>0?'#CC2222':'var(--accent)'};">${hasValue?(gap>0?'-'+gap:(officeDays===0?'—':'+'+Math.abs(gap))):'—'}</td>
       <td>${statusHtml}</td>
     `;
     tbody.appendChild(tr);
   }
 }
 
-function saveRepCalls(i, val) {
-  const wk = weekKey();
-  const data = getWeekData(wk);
-  if (!data.repCalls) data.repCalls = {};
-  data.repCalls[i] = val;
-  saveWeekData(wk, data);
-  buildCallReviewTable();
+function saveRepName(i,val) { const n=getRepNames(); n[i]=val; saveRepNames(n); }
+function saveRepCalls(i,val) {
+  const wk=weekKey(currentWeekOffset); const d=getWeekData(wk);
+  if(!d.repCalls) d.repCalls={}; d.repCalls[i]=val; saveWeekData(wk,d); buildRepCallTable();
 }
-function saveRepOfficeDays(i, val) {
-  const wk = weekKey();
-  const data = getWeekData(wk);
-  if (!data.repOfficeDays) data.repOfficeDays = {};
-  data.repOfficeDays[i] = val;
-  saveWeekData(wk, data);
-  buildCallReviewTable();
+function saveRepOfficeDays(i,val) {
+  const wk=weekKey(currentWeekOffset); const d=getWeekData(wk);
+  if(!d.repOfficeDays) d.repOfficeDays={}; d.repOfficeDays[i]=val; saveWeekData(wk,d); buildRepCallTable();
 }
 
-function toggleWeekCheck(el, id) {
-  const wk = weekKey();
-  const data = getWeekData(wk);
-  if (!data.checks) data.checks = {};
-  const isChecked = !el.classList.contains('checked');
-  data.checks[id] = isChecked;
-  saveWeekData(wk, data);
-  el.classList.toggle('checked', isChecked);
-  el.querySelector('.check-box').innerHTML = isChecked ? '<span style="font-size:10px;color:var(--black);font-weight:700;">✓</span>' : '';
+// ── HOLIDAYS ──────────────────────────────────────────────
+function addHoliday() {
+  const dateInput = document.getElementById('holidayDateInput');
+  const labelInput = document.getElementById('holidayLabelInput');
+  const val = dateInput.value;
+  if (!val) return;
+  const holidays = getHolidays();
+  if (holidays.find(h=>h.date===val)) return;
+  holidays.push({date:val, label:labelInput.value.trim()||val});
+  holidays.sort((a,b)=>a.date.localeCompare(b.date));
+  saveHolidays(holidays);
+  dateInput.value=''; labelInput.value='';
+  renderHolidayList(); buildMonthCallTable(getViewMonth());
 }
-function loadWeekChecks() {
-  const wk = weekKey();
-  const data = getWeekData(wk);
-  WEEK_CHECKS.forEach(id => {
-    const items = document.querySelectorAll('#tab-weekly .check-item');
-    items.forEach(item => {
-      const fn = item.getAttribute('onclick');
-      if (fn && fn.includes("'" + id + "'")) {
-        const checked = !!(data.checks && data.checks[id]);
-        item.classList.toggle('checked', checked);
-        item.querySelector('.check-box').innerHTML = checked ? '<span style="font-size:10px;color:var(--black);font-weight:700;">✓</span>' : '';
-      }
-    });
-  });
+function removeHoliday(date) {
+  saveHolidays(getHolidays().filter(h=>h.date!==date));
+  renderHolidayList(); buildMonthCallTable(getViewMonth());
 }
-function saveWeekField(id, val) {
-  const wk = weekKey();
-  const data = getWeekData(wk);
-  if (!data.fields) data.fields = {};
-  data.fields[id] = val;
-  saveWeekData(wk, data);
-}
-function loadWeekFields() {
-  const wk = weekKey();
-  const data = getWeekData(wk);
-  ['w_wins','w_concerns'].forEach(id => {
-    const el = document.getElementById(id);
-    if (el) el.value = (data.fields && data.fields[id]) || '';
-  });
+function renderHolidayList() {
+  const holidays = getHolidays();
+  const list = document.getElementById('holidayList');
+  if (!list) return;
+  list.innerHTML = holidays.length===0
+    ? '<span style="font-size:11px;color:#AAA;font-style:italic;">No holidays added</span>'
+    : holidays.map(h=>`<span class="holiday-tag">${h.date}${h.label&&h.label!==h.date?' · '+h.label:''}<button onclick="removeHoliday('${h.date}')" title="Remove">✕</button></span>`).join('');
 }
 
-// ============================================================
-// MONTHLY TAB
-// ============================================================
-function loadMonthlyTab() {
+function getBizDaysRemaining(monthDate) {
+  const holidays = getHolidays().map(h=>h.date);
+  const now = new Date(); now.setHours(0,0,0,0);
+  const lastDay = new Date(monthDate.getFullYear(), monthDate.getMonth()+1, 0);
+  let count = 0;
+  for (let d=new Date(now); d<=lastDay; d.setDate(d.getDate()+1)) {
+    if (d.getDay()===0||d.getDay()===6) continue;
+    if (holidays.includes(d.toISOString().slice(0,10))) continue;
+    count++;
+  }
+  return count;
+}
+
+function avgNeededCell(gap, bizDaysLeft, baseDaily) {
+  if (gap<=0||bizDaysLeft<=0) return '<td style="color:#AAA;font-family:monospace;font-size:11px;">—</td>';
+  const total = Math.ceil((gap/bizDaysLeft)+baseDaily);
+  const catchup = total - baseDaily;
+  return '<td style="font-family:monospace;font-size:12px;font-weight:700;color:#CC2222;">'+total+'<span style="font-size:10px;font-weight:400;color:#888;">/day</span><div style="font-size:9px;color:#888;font-weight:400;margin-top:1px;">('+baseDaily+' base + '+catchup+' catchup)</div></td>';
+}
+
+// ── MONTHLY TAB ───────────────────────────────────────────
+function changeMonth(delta) { currentMonthOffset+=delta; loadMonthlyTab(); }
+function getViewMonth() {
   const now = new Date();
-  const monthKey = now.toISOString().slice(0,7);
-  document.getElementById('monthLabel').textContent = now.toLocaleDateString('en-US',{month:'long',year:'numeric'});
-
-  buildMonthGrid(now);
-  calcMonthlyScore(now, monthKey);
-  buildMonthCallTable();
-  loadMonthChecks(monthKey);
-  loadMonthFields(monthKey);
+  return new Date(now.getFullYear(), now.getMonth()+currentMonthOffset, 1);
 }
 
-function buildMonthGrid(now) {
-  const grid = document.getElementById('monthGrid');
-  grid.innerHTML = '';
-  const days = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
-  days.forEach(d => {
-    const h = document.createElement('div');
-    h.className = 'month-day-header';
-    h.textContent = d[0];
-    grid.appendChild(h);
-  });
-
-  const year = now.getFullYear(), month = now.getMonth();
-  const firstDay = new Date(year, month, 1);
-  const lastDay = new Date(year, month + 1, 0);
-  let startPad = firstDay.getDay() - 1;
-  if (startPad < 0) startPad = 6;
-
-  for (let i = 0; i < startPad; i++) {
-    const empty = document.createElement('div'); empty.className = 'month-day empty'; grid.appendChild(empty);
-  }
-  for (let d = 1; d <= lastDay.getDate(); d++) {
-    const date = new Date(year, month, d);
-    const dayData = getDayData(date);
-    const isFuture = date > now;
-    const isToday = dateKey(date) === dateKey(now);
-    const pct = calcDayPct(date);
-    let cls = 'month-day';
-    if (isFuture) cls += ' future';
-    else if (dayData.submitted) cls += ' submitted';
-    else if (pct > 0) cls += ' partial';
-    if (isToday) cls += ' today';
-
-    const cell = document.createElement('div');
-    cell.className = cls;
-    cell.innerHTML = `<div class="day-num">${d}</div><div class="day-pip" style="background:${dayData.submitted?'var(--green)':pct>0?'var(--amber)':'transparent'}"></div>`;
-    if (!isFuture) cell.onclick = () => { currentDate = date; switchTab('daily'); loadDailyTab(); };
-    grid.appendChild(cell);
-  }
+function loadMonthlyTab() {
+  const d = getViewMonth();
+  document.getElementById('monthLabelDisplay').textContent = d.toLocaleDateString('en-US',{month:'long',year:'numeric'});
+  renderHolidayList();
+  buildMonthCallTable(d);
 }
 
-function calcMonthlyScore(now, monthKey) {
-  const year = now.getFullYear(), month = now.getMonth();
-  const lastDay = new Date(year, month + 1, 0).getDate();
-  let totalPct = 0, submittedDays = 0;
-  for (let d = 1; d <= Math.min(lastDay, now.getDate()); d++) {
-    const date = new Date(year, month, d);
-    if (date.getDay() === 0 || date.getDay() === 6) continue;
-    const dayData = getDayData(date);
-    if (dayData.submitted) { totalPct += calcDayPct(date); submittedDays++; }
-  }
-  const avg = submittedDays > 0 ? Math.round(totalPct / submittedDays) : 0;
-  const sc = document.getElementById('sc_overall');
-  sc.textContent = avg + '%';
-  sc.className = 'sc-val' + (avg >= 80 ? '' : avg >= 60 ? ' mid' : ' low');
-  document.getElementById('sc_days').textContent = submittedDays;
-  document.getElementById('sc_avg').textContent = avg + '%';
-}
-
-function toggleMonthCheck(el, id) {
-  const monthKey = new Date().toISOString().slice(0,7);
-  const data = getMonthData(monthKey);
-  if (!data.checks) data.checks = {};
-  const isChecked = !el.classList.contains('checked');
-  data.checks[id] = isChecked;
-  saveMonthData(monthKey, data);
-  el.classList.toggle('checked', isChecked);
-  el.querySelector('.check-box').innerHTML = isChecked ? '<span style="font-size:10px;color:var(--black);font-weight:700;">✓</span>' : '';
-}
-function loadMonthChecks(monthKey) {
-  const data = getMonthData(monthKey);
-  MONTH_CHECKS.forEach(id => {
-    const items = document.querySelectorAll('#tab-monthly .check-item');
-    items.forEach(item => {
-      const fn = item.getAttribute('onclick');
-      if (fn && fn.includes("'" + id + "'")) {
-        const checked = !!(data.checks && data.checks[id]);
-        item.classList.toggle('checked', checked);
-        item.querySelector('.check-box').innerHTML = checked ? '<span style="font-size:10px;color:var(--black);font-weight:700;">✓</span>' : '';
-      }
-    });
-  });
-}
-function saveMonthField(id, val) {
-  const monthKey = new Date().toISOString().slice(0,7);
-  const data = getMonthData(monthKey);
-  if (!data.fields) data.fields = {};
-  data.fields[id] = val;
-  saveMonthData(monthKey, data);
-}
-function loadMonthFields(monthKey) {
-  const data = getMonthData(monthKey);
-  ['m_wins','m_reps','m_concerns','m_next','m_monthly_notes'].forEach(id => {
-    const el = document.getElementById(id);
-    if (el) el.value = (data.fields && data.fields[id]) || '';
-  });
-}
-
-// ============================================================
-// SALES TAB
-// ============================================================
-function loadSalesTab() {
-  const data = getSalesData();
-  ['g_team_goal','g_team_actual','g_units_goal','g_units_actual','g_accts_goal','g_accts_actual','biz_days','biz_elapsed'].forEach(id => {
-    const el = document.getElementById(id);
-    if (el) el.value = data[id] || '';
-  });
-  buildRepSalesTable();
-  calcPace();
-}
-function saveSalesField(id, val) {
-  const data = getSalesData();
-  data[id] = val;
-  saveSalesData(data);
-}
-function calcPace() {
-  const data = getSalesData();
-  const bizDays = parseInt(data.biz_days || 22);
-  const elapsed = parseInt(data.biz_elapsed || 1) || 1;
-  const paceMultiplier = bizDays / elapsed;
-
-  function paceCalc(actual, goal, id) {
-    const a = parseFloat(actual || 0);
-    const g = parseFloat(goal || 0);
-    if (!g || !a) { document.getElementById(id).textContent = '—'; return; }
-    const projected = a * paceMultiplier;
-    const pct = Math.round((projected / g) * 100);
-    const color = pct >= 95 ? 'var(--green)' : pct >= 75 ? 'var(--amber)' : 'var(--red)';
-    document.getElementById(id).innerHTML = `<span style="color:${color};font-family:'Space Mono',monospace;">${pct}% pace</span>`;
-  }
-  paceCalc(data.g_team_actual, data.g_team_goal, 'g_team_pace');
-  paceCalc(data.g_units_actual, data.g_units_goal, 'g_units_pace');
-  paceCalc(data.g_accts_actual, data.g_accts_goal, 'g_accts_pace');
-
-  // Pace bars
-  const pb = document.getElementById('paceBars');
-  pb.innerHTML = '';
-  const metrics = [
-    {label:'Team Revenue', actual:data.g_team_actual, goal:data.g_team_goal},
-    {label:'Units / Orders', actual:data.g_units_actual, goal:data.g_units_goal},
-    {label:'New Accounts', actual:data.g_accts_actual, goal:data.g_accts_goal},
-  ];
-  metrics.forEach(m => {
-    if (!m.goal || !m.actual) return;
-    const projected = parseFloat(m.actual) * paceMultiplier;
-    const pct = Math.min(Math.round((projected / parseFloat(m.goal)) * 100), 120);
-    const cls = pct >= 95 ? '' : pct >= 75 ? ' warn' : ' danger';
-    pb.innerHTML += `
-      <div class="pace-bar-wrap">
-        <div style="display:flex;justify-content:space-between;margin-bottom:3px;">
-          <span style="font-size:11px;color:var(--text-muted);font-family:'Barlow Condensed',sans-serif;text-transform:uppercase;letter-spacing:.04em;">${m.label}</span>
-          <span style="font-family:'Space Mono',monospace;font-size:10px;color:${pct>=95?'var(--green)':pct>=75?'var(--amber)':'var(--red)'};">${pct}%</span>
-        </div>
-        <div class="pace-bar"><div class="pace-fill${cls}" style="width:${Math.min(pct,100)}%"></div></div>
-      </div>`;
-  });
-}
-function buildRepSalesTable() {
-  const names = getRepNames();
-  const data = getSalesData();
-  const bizDays = parseInt(data.biz_days || 22);
-  const elapsed = parseInt(data.biz_elapsed || 1) || 1;
-  const paceMultiplier = bizDays / elapsed;
-  const repSales = data.repSales || {};
-  const tbody = document.getElementById('repSalesBody');
-  tbody.innerHTML = '';
-  for (let i = 0; i < REP_COUNT; i++) {
-    const repName = names[i] || 'Rep ' + (i+1);
-    const goal = parseFloat((repSales[i] && repSales[i].goal) || 0);
-    const actual = parseFloat((repSales[i] && repSales[i].actual) || 0);
-    const pace = actual > 0 ? Math.round(actual * paceMultiplier) : 0;
-    const pctGoal = goal > 0 && pace > 0 ? Math.round((pace / goal) * 100) : 0;
-    const pctColor = pctGoal >= 95 ? 'var(--green)' : pctGoal >= 75 ? 'var(--amber)' : pctGoal > 0 ? 'var(--red)' : 'var(--text-dim)';
-    const tr = document.createElement('tr');
-    tr.innerHTML = `
-      <td style="font-weight:600;color:var(--text);">${repName}</td>
-      <td><input type="number" class="tbl-input" placeholder="0" value="${(repSales[i]&&repSales[i].goal)||''}" onchange="saveRepSales(${i},'goal',this.value)"></td>
-      <td><input type="number" class="tbl-input" placeholder="0" value="${(repSales[i]&&repSales[i].actual)||''}" onchange="saveRepSales(${i},'actual',this.value)"></td>
-      <td style="font-family:'Space Mono',monospace;font-size:11px;color:var(--text-muted);">${pace>0?'$'+pace.toLocaleString():'—'}</td>
-      <td style="font-family:'Space Mono',monospace;font-size:11px;color:${pctColor};">${pctGoal>0?pctGoal+'%':'—'}</td>
-      <td><input type="text" class="rep-input" placeholder="Notes..." value="${(repSales[i]&&repSales[i].notes)||''}" onchange="saveRepSales(${i},'notes',this.value)" style="width:100%;min-width:120px;"></td>
-    `;
-    tbody.appendChild(tr);
-  }
-}
-function saveRepSales(i, field, val) {
-  const data = getSalesData();
-  if (!data.repSales) data.repSales = {};
-  if (!data.repSales[i]) data.repSales[i] = {};
-  data.repSales[i][field] = val;
-  saveSalesData(data);
-  buildRepSalesTable();
-  calcPace();
-}
-
-// ============================================================
-// MONTHLY CALL TABLE
-// ============================================================
-function buildMonthCallTable() {
+function buildMonthCallTable(monthDate) {
   const names = getRepNames();
   const tbody = document.getElementById('monthCallBody');
-  if (!tbody) return;
   tbody.innerHTML = '';
+  const year=monthDate.getFullYear(), month=monthDate.getMonth();
+  const firstDay=new Date(year,month,1), lastDay=new Date(year,month+1,0);
+  const now=new Date(); now.setHours(0,0,0,0);
+  const yesterday=new Date(now); yesterday.setDate(yesterday.getDate()-1);
+  const bizDaysLeft = getBizDaysRemaining(monthDate);
 
-  const now = new Date();
-  const year = now.getFullYear(), month = now.getMonth();
-  const firstDay = new Date(year, month, 1);
-  const lastDay = new Date(year, month + 1, 0);
+  const bizEl = document.getElementById('bizDaysRemaining');
+  if (bizEl) bizEl.textContent = bizDaysLeft+' business day'+(bizDaysLeft!==1?'s':'')+' remaining in month (excl. weekends & holidays)';
 
+  // Week keys overlapping this month
   const weekKeys = new Set();
-  for (let d = new Date(firstDay); d <= lastDay; d.setDate(d.getDate() + 1)) {
-    const day = d.getDay();
-    const monday = new Date(d);
-    const diff = day === 0 ? -6 : 1 - day;
-    monday.setDate(monday.getDate() + diff);
+  for (let d=new Date(firstDay); d<=lastDay; d.setDate(d.getDate()+1)) {
+    const day=d.getDay(), monday=new Date(d);
+    monday.setDate(monday.getDate()-(day===0?6:day-1));
     weekKeys.add(monday.toISOString().slice(0,10));
   }
 
-  const repTotalCalls = {};
-  const repTotalOfficeDays = {};
-  weekKeys.forEach(wk => {
-    const wData = getWeekData(wk);
-    const repCalls = wData.repCalls || {};
-    const repOfficeDays = wData.repOfficeDays || {};
-    for (let i = 0; i < REP_COUNT; i++) {
-      repTotalCalls[i] = (repTotalCalls[i] || 0) + parseInt(repCalls[i] || 0);
-      repTotalOfficeDays[i] = (repTotalOfficeDays[i] || 0) + parseInt(repOfficeDays[i] || 0);
+  // Aggregate reps
+  const repTotalCalls={}, repTotalOfficeDays={};
+  weekKeys.forEach(wk=>{
+    const wData=getWeekData(wk);
+    for (let i=0;i<REP_COUNT();i++) {
+      repTotalCalls[i]=(repTotalCalls[i]||0)+parseInt((wData.repCalls&&wData.repCalls[i])||0);
+      repTotalOfficeDays[i]=(repTotalOfficeDays[i]||0)+parseFloat((wData.repOfficeDays&&wData.repOfficeDays[i])||0);
     }
   });
 
-  let managerTotalCalls = 0;
-  let managerOfficeDays = 0;
-  for (let d = new Date(firstDay); d <= now && d <= lastDay; d.setDate(d.getDate() + 1)) {
-    if (d.getDay() === 0 || d.getDay() === 6) { d.setDate(d.getDate()); continue; }
-    const dayData = getDayData(new Date(d));
-    const dayCalls = parseInt((dayData.fields && dayData.fields['calls_today']) || 0);
-    if (dayCalls > 0) {
-      managerTotalCalls += dayCalls;
-      managerOfficeDays++;
-    }
+  // Manager calls — through yesterday only
+  let mgrCalls=0, mgrOfficeDays=0;
+  for (let d=new Date(firstDay); d<=yesterday&&d<=lastDay; d.setDate(d.getDate()+1)) {
+    if (d.getDay()===0||d.getDay()===6) continue;
+    const dd=getDayData(new Date(d));
+    mgrCalls+=parseInt((dd.fields&&dd.fields['calls_today'])||0);
+    if (((dd.fields&&dd.fields['day_type'])||'in_office')==='in_office') mgrOfficeDays++;
   }
 
-  let totalRepGap = 0;
+  let totalRepGap=0;
 
-  for (let i = 0; i < REP_COUNT; i++) {
-    const name = names[i] || 'Rep ' + (i + 1);
-    const officeDays = repTotalOfficeDays[i] || 0;
-    const calls = repTotalCalls[i] || 0;
-    const target = officeDays * 50;
-    const gap = target > 0 ? target - calls : 0;
-
-    if (gap > 0) totalRepGap += gap;
-
-    let statusHtml = '';
-    if (officeDays === 0) statusHtml = '<span class="gap-badge on-track" style="opacity:.5;">NO DAYS SET</span>';
-    else if (calls >= target) statusHtml = '<span class="gap-badge on-track">✓ ON TRACK</span>';
-    else if (gap <= target * 0.1) statusHtml = '<span class="gap-badge behind">-' + gap + ' CALLS</span>';
-    else statusHtml = '<span class="gap-badge critical">-' + gap + ' CALLS</span>';
-
-    const gapColor = gap > 0 && target > 0 ? 'var(--red)' : 'var(--green)';
-    const gapText = target > 0 ? (gap > 0 ? '-' + gap : '+' + Math.abs(gap)) : '—';
-
-    const tr = document.createElement('tr');
-    tr.innerHTML = `
-      <td style="font-weight:600;color:var(--text);">${name}</td>
-      <td style="font-family:'Space Mono',monospace;font-size:11px;">${officeDays || '—'}</td>
-      <td style="font-family:'Space Mono',monospace;font-size:11px;color:var(--text-muted);">${target > 0 ? target : '—'}</td>
-      <td style="font-family:'Space Mono',monospace;font-size:12px;font-weight:600;color:var(--text);">${calls}</td>
-      <td style="font-family:'Space Mono',monospace;font-size:11px;color:${gapColor};">${gapText}</td>
+  // Rep rows
+  for (let i=0;i<REP_COUNT();i++) {
+    const name=names[i]||'Rep '+(i+1);
+    const officeDays=repTotalOfficeDays[i]||0;
+    const calls=repTotalCalls[i]||0;
+    const target=officeDays>0?Math.round(officeDays*50):0;
+    const gap=target>0?target-calls:0;
+    if (gap>0) totalRepGap+=gap;
+    const daysDisplay = officeDays>0 ? (officeDays%1!==0?officeDays.toFixed(1):officeDays)+' days' : '—';
+    let statusHtml='';
+    if (officeDays===0) statusHtml='<span class="gap-badge" style="opacity:.4;background:#EEE;color:#888;border:1px solid #DDD;">NO DAYS</span>';
+    else if (calls>=target) statusHtml='<span class="gap-badge on-track">✓ ON TRACK</span>';
+    else if (gap<=target*0.1) statusHtml='<span class="gap-badge behind">-'+gap+' CALLS</span>';
+    else statusHtml='<span class="gap-badge critical">-'+gap+' CALLS</span>';
+    const tr=document.createElement('tr');
+    tr.innerHTML=`
+      <td style="font-weight:600;">${name}</td>
+      <td style="font-family:monospace;font-size:11px;">${daysDisplay}</td>
+      <td style="font-family:monospace;font-size:11px;color:#888;">${target>0?target:'—'}</td>
+      <td style="font-family:monospace;font-size:12px;font-weight:600;">${calls}</td>
+      <td style="font-family:monospace;font-size:11px;color:${gap>0&&target>0?'#CC2222':'var(--accent)'};">${target>0?(gap>0?'-'+gap:'+'+Math.abs(gap)):'—'}</td>
       <td>${statusHtml}</td>
+      ${avgNeededCell(gap,bizDaysLeft,50)}
     `;
     tbody.appendChild(tr);
   }
 
-  const divRow = document.createElement('tr');
-  divRow.innerHTML = `<td colspan="6" style="padding:4px 10px;background:#F0F0F0;font-family:'Space Mono',monospace;font-size:9px;color:#888;letter-spacing:.08em;text-transform:uppercase;">Manager Requirements</td>`;
-  tbody.appendChild(divRow);
+  // Divider
+  const div=document.createElement('tr'); div.className='divider-row';
+  div.innerHTML='<td colspan="7">Manager Requirements</td>'; tbody.appendChild(div);
 
-  const mgrOwnTarget = managerOfficeDays * 10;
-  const mgrOwnGap = mgrOwnTarget - managerTotalCalls;
-  let mgrOwnStatus = '';
-  if (managerOfficeDays === 0) mgrOwnStatus = '<span class="gap-badge on-track" style="opacity:.5;">LOG CALLS</span>';
-  else if (managerTotalCalls >= mgrOwnTarget) mgrOwnStatus = '<span class="gap-badge on-track">✓ ON TRACK</span>';
-  else mgrOwnStatus = '<span class="gap-badge critical">-' + mgrOwnGap + ' CALLS</span>';
-
-  const mgrOwnRow = document.createElement('tr');
-  mgrOwnRow.style.background = '#F7FAF8';
-  mgrOwnRow.innerHTML = `
-    <td style="font-weight:700;color:var(--green);">Manager Own <span style="font-size:10px;color:var(--text-muted);font-weight:400;">(10/office day)</span></td>
-    <td style="font-family:'Space Mono',monospace;font-size:11px;">${managerOfficeDays || '—'}</td>
-    <td style="font-family:'Space Mono',monospace;font-size:11px;color:var(--text-muted);">${mgrOwnTarget > 0 ? mgrOwnTarget : '—'}</td>
-    <td style="font-family:'Space Mono',monospace;font-size:12px;font-weight:600;color:var(--text);">${managerTotalCalls}</td>
-    <td style="font-family:'Space Mono',monospace;font-size:11px;color:${mgrOwnGap>0?'var(--red)':'var(--green)'};">${mgrOwnTarget>0?(mgrOwnGap>0?'-'+mgrOwnGap:'+'+Math.abs(mgrOwnGap)):'—'}</td>
+  // Manager own
+  const mgrOwnTarget=mgrOfficeDays*10, mgrOwnGap=mgrOwnTarget-mgrCalls;
+  const mgrOwnStatus=mgrCalls>=mgrOwnTarget?'<span class="gap-badge on-track">✓ ON TRACK</span>':'<span class="gap-badge critical">-'+Math.max(mgrOwnGap,0)+' CALLS</span>';
+  const mgrOwnRow=document.createElement('tr'); mgrOwnRow.className='mgr-row';
+  mgrOwnRow.innerHTML=`
+    <td style="font-weight:700;color:var(--accent);">Manager Own <span style="font-size:10px;color:#888;font-weight:400;">(10/office day)</span></td>
+    <td style="font-family:monospace;font-size:11px;">${mgrOfficeDays||'—'}</td>
+    <td style="font-family:monospace;font-size:11px;color:#888;">${mgrOwnTarget>0?mgrOwnTarget:'—'}</td>
+    <td style="font-family:monospace;font-size:12px;font-weight:600;">${mgrCalls}</td>
+    <td style="font-family:monospace;font-size:11px;color:${mgrOwnGap>0?'#CC2222':'var(--accent)'};">${mgrOwnTarget>0?(mgrOwnGap>0?'-'+mgrOwnGap:'+'+Math.abs(mgrOwnGap)):'—'}</td>
     <td>${mgrOwnStatus}</td>
+    ${avgNeededCell(mgrOwnGap,bizDaysLeft,10)}
   `;
   tbody.appendChild(mgrOwnRow);
 
-  const makeupStatus = totalRepGap === 0
-    ? '<span class="gap-badge on-track">✓ NO MAKEUP NEEDED</span>'
-    : '<span class="gap-badge critical">+' + totalRepGap + ' MAKEUP CALLS</span>';
-
-  const makeupRow = document.createElement('tr');
-  makeupRow.style.background = '#F7FAF8';
-  makeupRow.innerHTML = `
-    <td style="font-weight:700;color:var(--green);">Manager Makeup <span style="font-size:10px;color:var(--text-muted);font-weight:400;">(team shortfall)</span></td>
-    <td colspan="2" style="font-family:'Space Mono',monospace;font-size:10px;color:var(--text-muted);">Sum of all rep shortfalls (surpluses do not offset)</td>
-    <td style="font-family:'Space Mono',monospace;font-size:12px;font-weight:600;color:${totalRepGap>0?'var(--red)':'var(--green)'};">${totalRepGap > 0 ? totalRepGap + ' owed' : '0'}</td>
+  // Makeup
+  const makeupRow=document.createElement('tr'); makeupRow.className='mgr-row';
+  makeupRow.innerHTML=`
+    <td style="font-weight:700;color:var(--accent);">Manager Makeup <span style="font-size:10px;color:#888;font-weight:400;">(team shortfall only)</span></td>
+    <td colspan="2" style="font-family:monospace;font-size:10px;color:#888;">Sum of rep shortfalls (surpluses do not offset)</td>
+    <td style="font-family:monospace;font-size:12px;font-weight:600;color:${totalRepGap>0?'#CC2222':'var(--accent)'};">${totalRepGap>0?totalRepGap+' owed':'0'}</td>
     <td>—</td>
-    <td>${makeupStatus}</td>
+    <td>${totalRepGap===0?'<span class="gap-badge on-track">✓ NONE NEEDED</span>':'<span class="gap-badge critical">+'+totalRepGap+' MAKEUP</span>'}</td>
+    <td style="color:#AAA;font-family:monospace;font-size:11px;">—</td>
   `;
   tbody.appendChild(makeupRow);
 
-  const mgrTotalRequired = mgrOwnTarget + totalRepGap;
-  const mgrTotalActual = managerTotalCalls;
-  const mgrTotalGap = mgrTotalRequired - mgrTotalActual;
-  const totalStatus = mgrTotalActual >= mgrTotalRequired
-    ? '<span class="gap-badge on-track">✓ ON TRACK</span>'
-    : '<span class="gap-badge critical">-' + mgrTotalGap + ' TOTAL</span>';
-
-  const totalRow = document.createElement('tr');
-  totalRow.style.background = '#EEF5F0';
-  totalRow.style.borderTop = '2px solid var(--green)';
-  totalRow.innerHTML = `
-    <td style="font-weight:700;color:var(--green);font-size:13px;">Manager Total Required</td>
-    <td colspan="2" style="font-family:'Space Mono',monospace;font-size:10px;color:var(--text-muted);">Own (${mgrOwnTarget}) + Makeup (${totalRepGap})</td>
-    <td style="font-family:'Space Mono',monospace;font-size:12px;font-weight:700;color:var(--text);">${mgrTotalActual} <span style="font-size:10px;color:var(--text-muted);">/ ${mgrTotalRequired}</span></td>
-    <td style="font-family:'Space Mono',monospace;font-size:12px;font-weight:700;color:${mgrTotalGap>0?'var(--red)':'var(--green)'};">${mgrTotalGap>0?'-'+mgrTotalGap:'+'+Math.abs(mgrTotalGap)}</td>
-    <td>${totalStatus}</td>
+  // Total
+  const mgrTotal=mgrOwnTarget+totalRepGap, mgrTotalGap=mgrTotal-mgrCalls;
+  const totalRow=document.createElement('tr'); totalRow.className='total-row';
+  totalRow.innerHTML=`
+    <td style="color:var(--accent);font-size:13px;">Manager Total Required</td>
+    <td colspan="2" style="font-family:monospace;font-size:10px;color:#888;">Own (${mgrOwnTarget}) + Makeup (${totalRepGap})</td>
+    <td style="font-family:monospace;font-size:12px;">${mgrCalls} <span style="font-size:10px;color:#888;">/ ${mgrTotal}</span></td>
+    <td style="font-family:monospace;font-size:12px;color:${mgrTotalGap>0?'#CC2222':'var(--accent)'};">${mgrTotalGap>0?'-'+mgrTotalGap:'+'+Math.abs(mgrTotalGap)}</td>
+    <td>${mgrCalls>=mgrTotal?'<span class="gap-badge on-track">✓ ON TRACK</span>':'<span class="gap-badge critical">-'+mgrTotalGap+' TOTAL</span>'}</td>
+    ${avgNeededCell(mgrTotalGap,bizDaysLeft,10)}
   `;
   tbody.appendChild(totalRow);
 }
 
-// ============================================================
-// PDF EXPORT
-// ============================================================
-function exportPDF() { window.print(); }
+// ── DIRECTOR TAB ─────────────────────────────────────────
+function getPrevBizDay() {
+  const d = new Date(); d.setHours(0,0,0,0);
+  do { d.setDate(d.getDate()-1); } while (d.getDay()===0||d.getDay()===6);
+  return d;
+}
 
-// ============================================================
-// INIT
-// ============================================================
+function dirAvgCell(gap, bizDaysLeft, baseDaily, accentColor) {
+  if (gap<=0||bizDaysLeft<=0) return '<td style="color:#AAA;font-family:monospace;font-size:11px;">—</td>';
+  const total = Math.ceil((gap/bizDaysLeft)+baseDaily);
+  const catchup = total-baseDaily;
+  return `<td style="font-family:monospace;font-size:12px;font-weight:700;color:#CC2222;">${total}<span style="font-size:10px;font-weight:400;color:#888;">/day</span><div style="font-size:9px;color:#888;margin-top:1px;">(${baseDaily} base + ${catchup} catchup)</div></td>`;
+}
+
+function buildDirectorTeam(teamKey, mgrBodyId, repsBodyId, summaryId, accentColor) {
+  const teamCfg = TEAMS[teamKey];
+  const prefix = teamCfg.prefix;
+  const repCount = teamCfg.repCount;
+
+  // Storage helpers scoped to this team
+  const tGetDay = (d) => { try { return JSON.parse(localStorage.getItem(prefix+'day_'+dateKey(d)))||{}; } catch { return {}; } };
+  const tGetWeek = (wk) => { try { return JSON.parse(localStorage.getItem(prefix+'week_'+wk))||{}; } catch { return {}; } };
+  const tGetNames = () => { try { return JSON.parse(localStorage.getItem(prefix+'rep_names'))||Array(repCount).fill(''); } catch { return Array(repCount).fill(''); } };
+  const tGetHolidays = () => { try { return JSON.parse(localStorage.getItem(prefix+'holidays'))||[]; } catch { return []; } };
+
+  const now = new Date(); now.setHours(0,0,0,0);
+  const prevBiz = getPrevBizDay();
+  const year = now.getFullYear(), month = now.getMonth();
+  const firstDay = new Date(year,month,1);
+  const lastDay = new Date(year,month+1,0);
+
+  // Biz days remaining (from today inclusive)
+  const holidays = tGetHolidays().map(h=>h.date);
+  let bizDaysLeft = 0;
+  for (let d=new Date(now); d<=lastDay; d.setDate(d.getDate()+1)) {
+    if (d.getDay()===0||d.getDay()===6) continue;
+    if (holidays.includes(d.toISOString().slice(0,10))) continue;
+    bizDaysLeft++;
+  }
+
+  // Week keys overlapping this month
+  const weekKeys = new Set();
+  for (let d=new Date(firstDay); d<=lastDay; d.setDate(d.getDate()+1)) {
+    const day=d.getDay(), mon=new Date(d);
+    mon.setDate(mon.getDate()-(day===0?6:day-1));
+    weekKeys.add(mon.toISOString().slice(0,10));
+  }
+
+  // Aggregate rep data
+  const repTotalCalls={}, repTotalOfficeDays={};
+  weekKeys.forEach(wk=>{
+    const wData=tGetWeek(wk);
+    for (let i=0;i<repCount;i++) {
+      repTotalCalls[i]=(repTotalCalls[i]||0)+parseInt((wData.repCalls&&wData.repCalls[i])||0);
+      repTotalOfficeDays[i]=(repTotalOfficeDays[i]||0)+parseFloat((wData.repOfficeDays&&wData.repOfficeDays[i])||0);
+    }
+  });
+
+  // Manager calls through prev biz day
+  let mgrCalls=0, mgrOfficeDays=0;
+  for (let d=new Date(firstDay); d<=prevBiz&&d<=lastDay; d.setDate(d.getDate()+1)) {
+    if (d.getDay()===0||d.getDay()===6) continue;
+    const dd=tGetDay(new Date(d));
+    mgrCalls+=parseInt((dd.fields&&dd.fields['calls_today'])||0);
+    if (((dd.fields&&dd.fields['day_type'])||'in_office')==='in_office') mgrOfficeDays++;
+  }
+
+  const names = tGetNames();
+  let totalRepGap = 0;
+
+  // ── Rep rows ──────────────────────────────────────────────
+  const repsBody = document.getElementById(repsBodyId);
+  repsBody.innerHTML = '';
+  for (let i=0;i<repCount;i++) {
+    const name = names[i]||'Rep '+(i+1);
+    const officeDays = repTotalOfficeDays[i]||0;
+    const calls = repTotalCalls[i]||0;
+    const target = officeDays>0?Math.round(officeDays*50):0;
+    const gap = target>0?target-calls:0;
+    if (gap>0) totalRepGap+=gap;
+    let statusHtml='';
+    if (officeDays===0) statusHtml='<span class="gap-badge" style="opacity:.4;background:#EEE;color:#888;border:1px solid #DDD;">NO DATA</span>';
+    else if (calls>=target) statusHtml='<span class="gap-badge" style="background:'+accentColor+'18;color:'+accentColor+';border:1px solid '+accentColor+'44;">✓ ON TRACK</span>';
+    else if (gap<=target*0.1) statusHtml='<span class="gap-badge behind">-'+gap+' CALLS</span>';
+    else statusHtml='<span class="gap-badge critical">-'+gap+' CALLS</span>';
+    const daysDisplay = officeDays>0?(officeDays%1!==0?officeDays.toFixed(1):officeDays)+' days':'—';
+    const tr=document.createElement('tr');
+    tr.innerHTML=`
+      <td style="font-weight:600;">${name}</td>
+      <td style="font-family:monospace;font-size:11px;">${daysDisplay}</td>
+      <td style="font-family:monospace;font-size:11px;color:#888;">${target>0?target:'—'}</td>
+      <td style="font-family:monospace;font-size:12px;font-weight:600;">${calls}</td>
+      <td style="font-family:monospace;font-size:11px;color:${gap>0&&target>0?'#CC2222':accentColor};">${target>0?(gap>0?'-'+gap:'+'+Math.abs(gap)):'—'}</td>
+      <td>${statusHtml}</td>
+      ${dirAvgCell(gap,bizDaysLeft,50,accentColor)}
+    `;
+    repsBody.appendChild(tr);
+  }
+
+  // ── Manager rows ──────────────────────────────────────────
+  const mgrBody = document.getElementById(mgrBodyId);
+  mgrBody.innerHTML = '';
+
+  const mgrOwnTarget = mgrOfficeDays*10;
+  const mgrOwnGap = mgrOwnTarget-mgrCalls;
+  let mgrOwnStatus='';
+  if (mgrOfficeDays===0) mgrOwnStatus='<span class="gap-badge" style="opacity:.4;background:#EEE;color:#888;border:1px solid #DDD;">NO DATA</span>';
+  else if (mgrCalls>=mgrOwnTarget) mgrOwnStatus='<span class="gap-badge" style="background:'+accentColor+'18;color:'+accentColor+';border:1px solid '+accentColor+'44;">✓ ON TRACK</span>';
+  else mgrOwnStatus='<span class="gap-badge critical">-'+Math.max(mgrOwnGap,0)+' CALLS</span>';
+
+  const mgrOwnRow=document.createElement('tr');
+  mgrOwnRow.innerHTML=`
+    <td style="font-weight:700;color:${accentColor};">Own Calls <span style="font-size:10px;color:#888;font-weight:400;">(10/office day)</span></td>
+    <td style="font-family:monospace;font-size:11px;">${mgrOfficeDays||'—'}</td>
+    <td style="font-family:monospace;font-size:11px;color:#888;">${mgrOwnTarget>0?mgrOwnTarget:'—'}</td>
+    <td style="font-family:monospace;font-size:12px;font-weight:600;">${mgrCalls}</td>
+    <td style="font-family:monospace;font-size:11px;color:${mgrOwnGap>0?'#CC2222':accentColor};">${mgrOwnTarget>0?(mgrOwnGap>0?'-'+mgrOwnGap:'+'+Math.abs(mgrOwnGap)):'—'}</td>
+    <td>${mgrOwnStatus}</td>
+    ${dirAvgCell(mgrOwnGap,bizDaysLeft,10,accentColor)}
+  `;
+  mgrBody.appendChild(mgrOwnRow);
+
+  // Makeup row
+  const makeupRow=document.createElement('tr');
+  makeupRow.style.background='#F9F9F9';
+  makeupRow.innerHTML=`
+    <td style="font-weight:700;color:${accentColor};">Team Makeup <span style="font-size:10px;color:#888;font-weight:400;">(rep shortfalls)</span></td>
+    <td colspan="2" style="font-family:monospace;font-size:10px;color:#888;">Sum of rep shortfalls only</td>
+    <td style="font-family:monospace;font-size:12px;font-weight:600;color:${totalRepGap>0?'#CC2222':accentColor};">${totalRepGap>0?totalRepGap+' owed':'0'}</td>
+    <td>—</td>
+    <td>${totalRepGap===0?('<span class="gap-badge" style="background:'+accentColor+'18;color:'+accentColor+';border:1px solid '+accentColor+'44;">✓ NONE OWED</span>'):'<span class="gap-badge critical">+'+totalRepGap+' MAKEUP</span>'}</td>
+    <td style="color:#AAA;font-family:monospace;font-size:11px;">—</td>
+  `;
+  mgrBody.appendChild(makeupRow);
+
+  // Total row
+  const mgrTotal=mgrOwnTarget+totalRepGap, mgrTotalGap=mgrTotal-mgrCalls;
+  const totalRow=document.createElement('tr');
+  totalRow.style.background=accentColor+'10';
+  totalRow.style.borderTop=`2px solid ${accentColor}`;
+  totalRow.innerHTML=`
+    <td style="font-weight:700;color:${accentColor};font-size:13px;">Total Required</td>
+    <td colspan="2" style="font-family:monospace;font-size:10px;color:#888;">Own (${mgrOwnTarget}) + Makeup (${totalRepGap})</td>
+    <td style="font-family:monospace;font-size:12px;font-weight:700;">${mgrCalls} <span style="font-size:10px;color:#888;">/ ${mgrTotal}</span></td>
+    <td style="font-family:monospace;font-size:12px;font-weight:700;color:${mgrTotalGap>0?'#CC2222':accentColor};">${mgrTotalGap>0?'-'+mgrTotalGap:'+'+Math.abs(mgrTotalGap)}</td>
+    <td>${mgrCalls>=mgrTotal?('<span class="gap-badge" style="background:'+accentColor+'18;color:'+accentColor+';border:1px solid '+accentColor+'44;">✓ ON TRACK</span>'):'<span class="gap-badge critical">-'+mgrTotalGap+' TOTAL</span>'}</td>
+    ${dirAvgCell(mgrTotalGap,bizDaysLeft,10,accentColor)}
+  `;
+  mgrBody.appendChild(totalRow);
+
+  // Summary line
+  const repsOnTrack = Object.keys(repTotalCalls).filter(i=>{ const t=Math.round((repTotalOfficeDays[i]||0)*50); return t>0&&(repTotalCalls[i]||0)>=t; }).length;
+  const repsWithData = Object.keys(repTotalOfficeDays).filter(i=>(repTotalOfficeDays[i]||0)>0).length;
+  const summaryEl = document.getElementById(summaryId);
+  if (summaryEl) summaryEl.textContent = repsWithData>0?repsOnTrack+' of '+repsWithData+' reps on track · Manager: '+(mgrCalls>=mgrTotal?'ON TRACK':'behind by '+Math.abs(mgrTotalGap)+' calls'):'No data entered yet';
+}
+
+function loadDirectorTab() {
+  const prevBiz = getPrevBizDay();
+  const asOfEl = document.getElementById('directorAsOf');
+  if (asOfEl) asOfEl.textContent = 'As of ' + prevBiz.toLocaleDateString('en-US',{weekday:'long',month:'long',day:'numeric',year:'numeric'});
+
+  buildDirectorTeam('ortho','orthoMgrBody','orthoRepsBody','orthoSummaryLine','#178040');
+  buildDirectorTeam('dme','dmeMgrBody','dmeRepsBody','dmeSummaryLine','#0E8A8A');
+}
+
+// ── INIT ─────────────────────────────────────────────────
 async function init() {
   await loadFromSupabase();
-  loadDailyTab();
+  switchTeam(currentTeam);
 }
 init();
 </script>
