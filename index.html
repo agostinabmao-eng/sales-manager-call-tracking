@@ -245,22 +245,23 @@ body { font-family: 'Barlow', sans-serif; background: #FFFFFF; color: #111111; m
   </div>
 </div>
 
-<!-- ===== REP WEEKLY CALLS ===== -->
+<!-- ===== REP CALLS ===== -->
 <div id="tab-reps" class="tab-content">
   <div class="week-nav">
-    <button class="week-btn" onclick="changeWeek(-1)">‹ Prev</button>
+    <button class="week-btn" onclick="changeSegment(-1)">‹ Prev</button>
     <div class="week-label" id="weekLabel">—</div>
-    <button class="week-btn" onclick="changeWeek(1)">Next ›</button>
+    <button class="week-btn" onclick="changeSegment(1)">Next ›</button>
   </div>
+  <div style="font-family:monospace;font-size:10px;color:#888;text-align:center;margin-bottom:1rem;" id="segmentBizDays">—</div>
   <div class="card accent">
-    <div class="card-title">👥 Rep Weekly Call Tracking <span class="badge">50 CALLS / OFFICE DAY</span></div>
+    <div class="card-title">👥 Rep Call Tracking <span class="badge" id="repCallBadge">50 CALLS / OFFICE DAY</span></div>
     <table class="call-table">
       <thead>
         <tr>
           <th>Rep Name</th>
           <th>Office Days</th>
-          <th>Weekly Target</th>
-          <th>Calls This Week</th>
+          <th>Target</th>
+          <th>Calls</th>
           <th>Gap</th>
           <th>Status</th>
         </tr>
@@ -383,9 +384,7 @@ body { font-family: 'Barlow', sans-serif; background: #FFFFFF; color: #111111; m
 </div><!-- end main -->
 
 <script>
-// ============================================================
-// SUPABASE
-// ============================================================
+// ── SUPABASE ──────────────────────────────────────────────
 const SB_URL = 'https://lqnmkrrirhbtsywoxzve.supabase.co';
 const SB_KEY = 'sb_publishable_L2mMtUYcew6hhMWXsTU0OQ_hFdJyvkN';
 const SB_HEADERS = {
@@ -446,7 +445,7 @@ function switchTeam(team) {
 }
 
 // ── Storage ───────────────────────────────────────────────
-function dateKey(d) { return new Date(d).toISOString().slice(0,10); }
+function dateKey(d) { const dt=new Date(d); const y=dt.getFullYear(), m=String(dt.getMonth()+1).padStart(2,'0'), day=String(dt.getDate()).padStart(2,'0'); return y+'-'+m+'-'+day; }
 function getDayData(d) { try { return JSON.parse(localStorage.getItem(PREFIX()+'day_'+dateKey(d))) || {}; } catch { return {}; } }
 function saveDayData(d, data) {
   const k = PREFIX()+'day_'+dateKey(d);
@@ -589,32 +588,110 @@ function updateMgrMonthProgress() {
   document.getElementById('mgrMonthTarget').textContent = 'Target: '+target;
 }
 
-// ── REP TAB ───────────────────────────────────────────────
-function getWeekStart(offset) {
-  const now = new Date();
-  const day = now.getDay();
-  const monday = new Date(now);
-  monday.setDate(now.getDate() - (day===0?6:day-1) + (offset*7));
-  return monday;
+// ── REP TAB — month-aware segments ────────────────────────
+// Segment = portion of a week that falls within one calendar month
+// Storage key = first business day of segment (YYYY-MM-DD)
+
+function localDateStr(d) {
+  const y=d.getFullYear(), m=String(d.getMonth()+1).padStart(2,'0'), dd=String(d.getDate()).padStart(2,'0');
+  return y+'-'+m+'-'+dd;
 }
-function weekKey(offset) { return getWeekStart(offset).toISOString().slice(0,10); }
-function changeWeek(delta) { currentWeekOffset += delta; loadRepTab(); }
+
+function getMonthSegments(year, month) {
+  // Returns array of {start, end, bizDays, key} for every segment in this month
+  const firstDay = new Date(year, month, 1);
+  const lastDay  = new Date(year, month+1, 0);
+  const segments = [];
+  const seen = new Set();
+
+  for (let d=new Date(firstDay); d<=lastDay; d.setDate(d.getDate()+1)) {
+    // Find Monday of this week
+    const dow = d.getDay();
+    const mon = new Date(d);
+    mon.setDate(d.getDate() - (dow===0?6:dow-1));
+    mon.setHours(0,0,0,0);
+    const monStr = localDateStr(mon);
+    if (seen.has(monStr)) continue;
+    seen.add(monStr);
+
+    // Segment start/end = intersection of [mon, mon+6] and [firstDay, lastDay]
+    const segStart = new Date(Math.max(mon.getTime(), firstDay.getTime()));
+    const fri = new Date(mon); fri.setDate(mon.getDate()+4);
+    const segEnd   = new Date(Math.min(fri.getTime(), lastDay.getTime()));
+
+    // Count biz days in segment
+    let bizDays = 0;
+    for (let sd=new Date(segStart); sd<=segEnd; sd.setDate(sd.getDate()+1)) {
+      if (sd.getDay()!==0 && sd.getDay()!==6) bizDays++;
+    }
+    if (bizDays === 0) continue;
+
+    // Key = first biz day of segment
+    let keyDate = new Date(segStart);
+    while (keyDate.getDay()===0||keyDate.getDay()===6) keyDate.setDate(keyDate.getDate()+1);
+
+    segments.push({ start: new Date(segStart), end: new Date(segEnd), bizDays, key: localDateStr(keyDate) });
+  }
+  return segments;
+}
+
+// State for rep tab
+let repTabYear  = new Date().getFullYear();
+let repTabMonth = new Date().getMonth();
+let repTabSegIdx = null; // null = auto-select current segment
+
+function getCurrentSegmentIdx(segments) {
+  const today = new Date(); today.setHours(0,0,0,0);
+  for (let i=0; i<segments.length; i++) {
+    if (today >= segments[i].start && today <= segments[i].end) return i;
+  }
+  // If today is past the month, return last segment
+  return segments.length - 1;
+}
+
+function changeSegment(delta) {
+  const segs = getMonthSegments(repTabYear, repTabMonth);
+  if (repTabSegIdx === null) repTabSegIdx = getCurrentSegmentIdx(segs);
+  repTabSegIdx += delta;
+  if (repTabSegIdx < 0) {
+    // Go to previous month
+    repTabMonth--;
+    if (repTabMonth < 0) { repTabMonth = 11; repTabYear--; }
+    const newSegs = getMonthSegments(repTabYear, repTabMonth);
+    repTabSegIdx = newSegs.length - 1;
+  } else if (repTabSegIdx >= segs.length) {
+    // Go to next month
+    repTabMonth++;
+    if (repTabMonth > 11) { repTabMonth = 0; repTabYear++; }
+    repTabSegIdx = 0;
+  }
+  loadRepTab();
+}
 
 function loadRepTab() {
-  const ws = getWeekStart(currentWeekOffset);
-  const we = new Date(ws); we.setDate(we.getDate()+6);
-  document.getElementById('weekLabel').textContent =
-    ws.toLocaleDateString('en-US',{month:'short',day:'numeric'})+' – '+
-    we.toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});
-  buildRepCallTable();
+  const segs = getMonthSegments(repTabYear, repTabMonth);
+  if (repTabSegIdx === null) repTabSegIdx = getCurrentSegmentIdx(segs);
+  if (repTabSegIdx >= segs.length) repTabSegIdx = segs.length - 1;
+  if (repTabSegIdx < 0) repTabSegIdx = 0;
+  const seg = segs[repTabSegIdx];
+
+  // Format label
+  const startStr = seg.start.toLocaleDateString('en-US',{month:'short',day:'numeric'});
+  const endStr   = seg.end.toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});
+  const sameDay  = localDateStr(seg.start)===localDateStr(seg.end);
+  document.getElementById('weekLabel').textContent = sameDay ? startStr + ', ' + seg.end.getFullYear() : startStr + ' – ' + endStr;
+  document.getElementById('segmentBizDays').textContent = seg.bizDays + ' business day' + (seg.bizDays!==1?'s':'') + ' in this period  ·  segment '+(repTabSegIdx+1)+' of '+segs.length+' for '+seg.start.toLocaleDateString('en-US',{month:'long',year:'numeric'});
+
+  buildRepCallTable(seg);
 }
 
-function buildRepCallTable() {
+function buildRepCallTable(seg) {
   const names = getRepNames();
-  const wk = weekKey(currentWeekOffset);
+  const wk = seg.key;
   const wData = getWeekData(wk);
   const repCalls = wData.repCalls || {};
   const repOfficeDays = wData.repOfficeDays || {};
+  const maxDays = seg.bizDays;
   const tbody = document.getElementById('repCallBody');
   tbody.innerHTML = '';
   for (let i = 0; i < REP_COUNT(); i++) {
@@ -636,16 +713,16 @@ function buildRepCallTable() {
     } else {
       statusHtml='<span class="gap-badge critical">-'+gap+' CALLS</span>';
     }
-    const daysLabel = !hasValue ? '' : officeDays===0 ? '<div style="font-size:9px;color:#888;margin-top:2px;font-family:monospace;">0 calls req.</div>' : (officeDays%1!==0?'<div style="font-size:9px;color:#888;margin-top:2px;font-family:monospace;">'+Math.round(officeDays*50)+' calls req.</div>':'');
+    const daysLabel = !hasValue ? '' : officeDays===0 ? '' : (officeDays%1!==0?'<div style="font-size:9px;color:#888;margin-top:2px;font-family:monospace;">'+Math.round(officeDays*50)+' calls req.</div>':'');
     const tr = document.createElement('tr');
     tr.innerHTML = `
       <td><input type="text" class="rep-name-input" value="${names[i]||''}" placeholder="Rep ${i+1} Name" onchange="saveRepName(${i},this.value)"></td>
       <td>
-        <input type="number" class="call-input" value="${hasValue?officeDays:''}" placeholder="—" step="0.5" min="0" max="7" onchange="saveRepOfficeDays(${i},this.value)" style="width:65px;">
+        <input type="number" class="call-input" value="${hasValue?officeDays:''}" placeholder="—" step="0.5" min="0" max="${maxDays}" onchange="saveRepOfficeDays(${i},this.value,'${wk}')" style="width:65px;">
         ${daysLabel}
       </td>
       <td style="font-family:monospace;font-size:11px;color:#888;">${target>0?target:(hasValue&&officeDays===0?'0':'—')}</td>
-      <td><input type="number" class="call-input" value="${repCalls[i]||''}" placeholder="0" onchange="saveRepCalls(${i},this.value)"></td>
+      <td><input type="number" class="call-input" value="${repCalls[i]||''}" placeholder="0" onchange="saveRepCalls(${i},this.value,'${wk}')"></td>
       <td style="font-family:monospace;font-size:11px;color:${gap>0&&target>0?'#CC2222':'var(--accent)'};">${hasValue?(gap>0?'-'+gap:(officeDays===0?'—':'+'+Math.abs(gap))):'—'}</td>
       <td>${statusHtml}</td>
     `;
@@ -654,13 +731,17 @@ function buildRepCallTable() {
 }
 
 function saveRepName(i,val) { const n=getRepNames(); n[i]=val; saveRepNames(n); }
-function saveRepCalls(i,val) {
-  const wk=weekKey(currentWeekOffset); const d=getWeekData(wk);
-  if(!d.repCalls) d.repCalls={}; d.repCalls[i]=val; saveWeekData(wk,d); buildRepCallTable();
+function saveRepCalls(i,val,wk) {
+  const d=getWeekData(wk);
+  if(!d.repCalls) d.repCalls={}; d.repCalls[i]=val; saveWeekData(wk,d);
+  const segs=getMonthSegments(repTabYear,repTabMonth);
+  buildRepCallTable(segs[repTabSegIdx]);
 }
-function saveRepOfficeDays(i,val) {
-  const wk=weekKey(currentWeekOffset); const d=getWeekData(wk);
-  if(!d.repOfficeDays) d.repOfficeDays={}; d.repOfficeDays[i]=val; saveWeekData(wk,d); buildRepCallTable();
+function saveRepOfficeDays(i,val,wk) {
+  const d=getWeekData(wk);
+  if(!d.repOfficeDays) d.repOfficeDays={}; d.repOfficeDays[i]=val; saveWeekData(wk,d);
+  const segs=getMonthSegments(repTabYear,repTabMonth);
+  buildRepCallTable(segs[repTabSegIdx]);
 }
 
 // ── HOLIDAYS ──────────────────────────────────────────────
@@ -737,21 +818,16 @@ function buildMonthCallTable(monthDate) {
   const bizEl = document.getElementById('bizDaysRemaining');
   if (bizEl) bizEl.textContent = bizDaysLeft+' business day'+(bizDaysLeft!==1?'s':'')+' remaining in month (excl. weekends & holidays)';
 
-  // Week keys overlapping this month
-  const weekKeys = new Set();
-  for (let d=new Date(firstDay); d<=lastDay; d.setDate(d.getDate()+1)) {
-    const day=d.getDay(), monday=new Date(d);
-    monday.setDate(monday.getDate()-(day===0?6:day-1));
-    weekKeys.add(monday.toISOString().slice(0,10));
-  }
+  // Use segment keys — each segment is already month-bounded, no cross-month leakage
+  const segments = getMonthSegments(year, month);
 
-  // Aggregate reps
+  // Aggregate reps using segment keys
   const repTotalCalls={}, repTotalOfficeDays={};
-  weekKeys.forEach(wk=>{
-    const wData=getWeekData(wk);
+  segments.forEach(seg=>{
+    const wData=getWeekData(seg.key);
     for (let i=0;i<REP_COUNT();i++) {
       repTotalCalls[i]=(repTotalCalls[i]||0)+parseInt((wData.repCalls&&wData.repCalls[i])||0);
-      repTotalOfficeDays[i]=(repTotalOfficeDays[i]||0)+parseFloat((wData.repOfficeDays&&wData.repOfficeDays[i])||0);
+      repTotalOfficeDays[i]=parseFloat(((repTotalOfficeDays[i]||0)+parseFloat((wData.repOfficeDays&&wData.repOfficeDays[i])||0)).toFixed(2));
     }
   });
 
@@ -878,21 +954,15 @@ function buildDirectorTeam(teamKey, mgrBodyId, repsBodyId, summaryId, accentColo
     bizDaysLeft++;
   }
 
-  // Week keys overlapping this month
-  const weekKeys = new Set();
-  for (let d=new Date(firstDay); d<=lastDay; d.setDate(d.getDate()+1)) {
-    const day=d.getDay(), mon=new Date(d);
-    mon.setDate(mon.getDate()-(day===0?6:day-1));
-    weekKeys.add(mon.toISOString().slice(0,10));
-  }
+  // Use segment keys — already month-bounded
+  const dirSegs = getMonthSegments(year, month);
 
-  // Aggregate rep data
   const repTotalCalls={}, repTotalOfficeDays={};
-  weekKeys.forEach(wk=>{
-    const wData=tGetWeek(wk);
+  dirSegs.forEach(seg=>{
+    const wData=tGetWeek(seg.key);
     for (let i=0;i<repCount;i++) {
       repTotalCalls[i]=(repTotalCalls[i]||0)+parseInt((wData.repCalls&&wData.repCalls[i])||0);
-      repTotalOfficeDays[i]=(repTotalOfficeDays[i]||0)+parseFloat((wData.repOfficeDays&&wData.repOfficeDays[i])||0);
+      repTotalOfficeDays[i]=parseFloat(((repTotalOfficeDays[i]||0)+parseFloat((wData.repOfficeDays&&wData.repOfficeDays[i])||0)).toFixed(2));
     }
   });
 
