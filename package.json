@@ -1,0 +1,15 @@
+{
+  "name": "sales-manager-call-tracking",
+  "version": "1.0.0",
+  "private": true,
+  "scripts": {
+    "start": "node server.js",
+    "import:supabase": "node scripts/import-from-supabase.js"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "dependencies": {
+    "pg": "^8.13.0"
+  }
+}

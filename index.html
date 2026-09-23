@@ -384,31 +384,23 @@ body { font-family: 'Barlow', sans-serif; background: #FFFFFF; color: #111111; m
 </div><!-- end main -->
 
 <script>
-// ── SUPABASE ──────────────────────────────────────────────
-const SB_URL = 'https://lqnmkrrirhbtsywoxzve.supabase.co';
-const SB_KEY = 'sb_publishable_L2mMtUYcew6hhMWXsTU0OQ_hFdJyvkN';
-const SB_HEADERS = {
-  'apikey': SB_KEY,
-  'Authorization': 'Bearer ' + SB_KEY,
-  'Content-Type': 'application/json'
-};
-
+// ── PERSISTENCE (server API backed by Postgres) ───────────
 function supabaseSync(key, value) {
-  fetch(SB_URL + '/rest/v1/app_data', {
+  fetch('/api/data', {
     method: 'POST',
-    headers: { ...SB_HEADERS, 'Prefer': 'resolution=merge-duplicates' },
-    body: JSON.stringify({ key, value, updated_at: new Date().toISOString() })
-  }).catch(e => console.warn('Supabase sync error:', e));
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ key, value })
+  }).catch(e => console.warn('Sync error:', e));
 }
 
 async function loadFromSupabase() {
   try {
-    const res = await fetch(SB_URL + '/rest/v1/app_data?select=key,value', { headers: SB_HEADERS });
+    const res = await fetch('/api/data');
     if (!res.ok) return;
     const rows = await res.json();
     rows.forEach(row => localStorage.setItem(row.key, JSON.stringify(row.value)));
   } catch(e) {
-    console.warn('Supabase load error:', e);
+    console.warn('Load error:', e);
   }
 }
 
