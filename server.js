@@ -41,7 +41,7 @@ async function handle(req, res) {
   const url = new URL(req.url, 'http://localhost');
 
   if (url.pathname === '/health') {
-    return sendJson(res, 200, { ok: true });
+    return sendJson(res, 200, { ok: true, db: dbReady });
   }
 
   if (url.pathname === '/api/data') {
@@ -76,24 +76,37 @@ async function handle(req, res) {
   res.end(INDEX);
 }
 
-async function main() {
-  await pool.query(`
-    CREATE TABLE IF NOT EXISTS app_data (
-      key text PRIMARY KEY,
-      value jsonb NOT NULL,
-      updated_at timestamptz NOT NULL DEFAULT now()
-    )
-  `);
+let dbReady = false;
 
-  http.createServer((req, res) => {
-    handle(req, res).catch(err => {
-      console.error(err);
-      if (!res.headersSent) sendJson(res, 500, { error: 'Internal server error' });
-    });
-  }).listen(PORT, () => console.log(`Listening on port ${PORT}`));
+// Keep retrying so a slow or misconfigured database shows up in the logs
+// instead of crashing the container.
+async function initDb() {
+  try {
+    await pool.query(`
+      CREATE TABLE IF NOT EXISTS app_data (
+        key text PRIMARY KEY,
+        value jsonb NOT NULL,
+        updated_at timestamptz NOT NULL DEFAULT now()
+      )
+    `);
+    dbReady = true;
+    console.log('Database ready');
+  } catch (err) {
+    console.error(`Database not reachable (${err.code || ''} ${err.message}). Retrying in 5s...`);
+    setTimeout(initDb, 5000);
+  }
 }
 
-main().catch(err => {
-  console.error('Startup failed:', err);
-  process.exit(1);
-});
+pool.on('error', err => console.error('Postgres pool error:', err.message));
+
+http.createServer((req, res) => {
+  if (!dbReady && req.url.startsWith('/api/')) {
+    return sendJson(res, 503, { error: 'Database not ready' });
+  }
+  handle(req, res).catch(err => {
+    console.error(err);
+    if (!res.headersSent) sendJson(res, 500, { error: 'Internal server error' });
+  });
+}).listen(PORT, '0.0.0.0', () => console.log(`Listening on port ${PORT}`));
+
+initDb();
